@@ -1,22 +1,35 @@
-import emcee
+import os
 import time
-from taurex.optimizer import Optimizer
+
+import emcee
 import numpy as np
+from taurex.optimizer import Optimizer
 from taurex.util.util import quantile_corner
 from taurex.util.util import recursively_save_dict_contents_to_output
 
 
-# TODO: implement emcee sampler
 class EmceeSampler(Optimizer):
+    os.environ["OMP_NUM_THREADS"] = "1"
 
-    def __init__(self,
-                 observed=None,
-                 model=None,
-                 ):
-        super().__init__('Emcee', observed, model, )
+    def __init__(
+        self,
+        observed=None,
+        model=None,
+        sigma_fraction=0.1,
+        nwalkers: int = None,
+        nsteps: int = None,
+        pool=None,
+        moves=None,
+        backend=None,
+    ):
+        super().__init__("Emcee", observed, model, sigma_fraction)
+
+        self.nwalkers = int(nwalkers)
+        self.nsteps = int(nsteps)
+        self.pool = pool
+        self.moves = moves
+        self.backend = backend
         self.emcee_output = None
-
-        raise NotImplementedError
 
     def compute_fit(self):
         data = self._observed.spectrum
@@ -40,28 +53,43 @@ class EmceeSampler(Optimizer):
 
             return np.array(cube)
 
-        sampler = emcee.somesampler
+        def emcee_logprob(params):
+            # log-probability function called by emcee
+            lp = emcee_prior(params)
+            if not np.isfinite(lp):
+                return -np.inf
+            return lp + emcee_loglike(params)
 
-        sampler_choice = {
-            'key': emcee.smth,
-        }
+        ndim = len(self.fitting_parameters)
+        self.warning("Number of dimensions {}".format(ndim))
+        self.warning("Fitting parameters {}".format(self.fitting_parameters))
 
-        stepchoice = self.stepsampler.lower()
-
-        if stepchoice is not None and stepchoice in sampler_choice:
-            sampler.stepsampler = 'probably do something here'
+        self.info("Instantiating fit......")
+        sampler = emcee.EnsembleSampler(
+            nwalkers=self.nwalkers,
+            ndim=ndim,
+            log_prob_fn=emcee_logprob,
+        )
 
         t0 = time.time()
 
-        result = sampler.run(
-            'some options'
+        initial_state = (
+            np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-4
         )
+
+        result = sampler.run_mcmc(
+            initial_state=initial_state,
+            nsteps=self.nsteps,
+            progress=True,
+        )
+
         t1 = time.time()
 
         self.warning("Time taken to run 'Emcee' is %s seconds", t1 - t0)
 
-        self.warning('Fit complete.....')
+        self.warning("Fit complete.....")
 
+        raise NotImplementedError
         self.emcee_output = self.store_emcee_output(result)
 
     def store_emcee_output(self, result):
@@ -82,55 +110,55 @@ class EmceeSampler(Optimizer):
         """
 
         emcee_output = {}
-        emcee_output['Stats'] = {}
-        emcee_output['Stats']['Some stats'] = 'some stats'
+        emcee_output["Stats"] = {}
+        emcee_output["Stats"]["Some stats"] = "some stats"
 
-        fit_param = self.fit_names
-
-        # The below needs re-implementing
-        samples = result['weighted_samples']['points']
-        weights = result['weighted_samples']['weights']
-        logl = result['weighted_samples']['logl']
-        mean, cov = result['posterior']['mean'], result['posterior']['stdev']
-        emcee_output['solution'] = {}
-        emcee_output['solution']['Some results'] = 'some results'
-        # emcee_output['solution']['covariance'] = cov
-        emcee_output['solution']['fitparams'] = {}
-
-        max_weight = weights.argmax()
-
-        table_data = []
-
-        for idx, param_name in enumerate(fit_param):
-            param = {}
-            param['mean'] = mean[idx]
-            param['sigma'] = cov[idx]
-            trace = samples[:, idx]
-            q_16, q_50, q_84 = quantile_corner(trace, [0.16, 0.5, 0.84],
-                                               weights=np.asarray(weights))
-            param['value'] = q_50
-            param['sigma_m'] = q_50 - q_16
-            param['sigma_p'] = q_84 - q_50
-            param['trace'] = trace
-            param['map'] = trace[max_weight]
-            table_data.append((param_name, q_50, q_50 - q_16))
-
-            emcee_output['solution']['fitparams'][param_name] = param
+        # fit_param = self.fit_names
+        #
+        # # The below needs re-implementing
+        # samples = result["weighted_samples"]["points"]
+        # weights = result["weighted_samples"]["weights"]
+        # logl = result["weighted_samples"]["logl"]
+        # mean, cov = result["posterior"]["mean"], result["posterior"]["stdev"]
+        # emcee_output["solution"] = {}
+        # emcee_output["solution"]["Some results"] = "some results"
+        # # emcee_output['solution']['covariance'] = cov
+        # emcee_output["solution"]["fitparams"] = {}
+        #
+        # max_weight = weights.argmax()
+        #
+        # table_data = []
+        #
+        # for idx, param_name in enumerate(fit_param):
+        #     param = {}
+        #     param["mean"] = mean[idx]
+        #     param["sigma"] = cov[idx]
+        #     trace = samples[:, idx]
+        #     q_16, q_50, q_84 = quantile_corner(
+        #         trace, [0.16, 0.5, 0.84], weights=np.asarray(weights)
+        #     )
+        #     param["value"] = q_50
+        #     param["sigma_m"] = q_50 - q_16
+        #     param["sigma_p"] = q_84 - q_50
+        #     param["trace"] = trace
+        #     param["map"] = trace[max_weight]
+        #     table_data.append((param_name, q_50, q_50 - q_16))
+        #
+        #     emcee_output["solution"]["fitparams"][param_name] = param
 
         return emcee_output
 
     def get_samples(self, solution_idx):
-        return self.emcee_output['solution']['samples']
+        return self.emcee_output["solution"]["samples"]
 
     def get_weights(self, solution_idx):
-        return self.emcee_output['solution']['weights']
+        return self.emcee_output["solution"]["weights"]
 
     def write_fit(self, output):
         fit = super().write_fit(output)
 
         if self.emcee_output:
-            recursively_save_dict_contents_to_output(
-                output, self.emcee_output)
+            recursively_save_dict_contents_to_output(output, self.emcee_output)
 
         return fit
 
@@ -165,27 +193,30 @@ class EmceeSampler(Optimizer):
             raw_weights
 
         """
+        pass
 
-        names = self.fit_names
-        opt_map = self.fit_values
-        opt_values = self.fit_values
-        for k, v in self.emcee_output['solution']['fitparams'].items():
-            # if k.endswith('_derived'):
-            #     continue
-            idx = names.index(k)
-            opt_map[idx] = v['map']
-            opt_values[idx] = v['value']
-
-        yield 0, opt_map, opt_values, [('Statistics', self.emcee_output['Stats']),
-                                       ('fit_params',
-                                        self.emcee_output['solution']['fitparams']),
-                                       ('tracedata',
-                                        self.emcee_output['solution']['samples']),
-                                       ('weights', self.emcee_output['solution']['weights'])]
+        # names = self.fit_names
+        # opt_map = self.fit_values
+        # opt_values = self.fit_values
+        # for k, v in self.emcee_output["solution"]["fitparams"].items():
+        #     # if k.endswith('_derived'):
+        #     #     continue
+        #     idx = names.index(k)
+        #     opt_map[idx] = v["map"]
+        #     opt_values[idx] = v["value"]
+        #
+        # yield 0, opt_map, opt_values, [
+        #     ("Statistics", self.emcee_output["Stats"]),
+        #     ("fit_params", self.emcee_output["solution"]["fitparams"]),
+        #     ("tracedata", self.emcee_output["solution"]["samples"]),
+        #     ("weights", self.emcee_output["solution"]["weights"]),
+        # ]
 
     @classmethod
     def input_keywords(self):
-        return ['emcee', ]
+        return [
+            "emcee",
+        ]
 
     BIBTEX_ENTRIES = [
         """
