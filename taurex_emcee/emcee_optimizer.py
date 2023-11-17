@@ -56,7 +56,7 @@ class EmceeSampler(Optimizer):
         def emcee_logprob(params):
             # log-probability function called by emcee
             lp = emcee_prior(params)
-            if not np.isfinite(lp):
+            if not np.any(np.isfinite(lp)):
                 return -np.inf
             return lp + emcee_loglike(params)
 
@@ -77,7 +77,7 @@ class EmceeSampler(Optimizer):
             np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-4
         )
 
-        result = sampler.run_mcmc(
+        state = sampler.run_mcmc(
             initial_state=initial_state,
             nsteps=self.nsteps,
             progress=True,
@@ -89,8 +89,7 @@ class EmceeSampler(Optimizer):
 
         self.warning("Fit complete.....")
 
-        raise NotImplementedError
-        self.emcee_output = self.store_emcee_output(result)
+        self.emcee_output = self.store_emcee_output(sampler)
 
     def store_emcee_output(self, result):
         """
@@ -109,42 +108,54 @@ class EmceeSampler(Optimizer):
 
         """
 
+        # tau = result.get_autocorr_time()
+        tau = np.array([2, 3])  # for development purposes
+        burnin = int(2 * np.max(tau))
+        thin = int(0.5 * np.min(tau))
+        print("burn-in: {0}".format(burnin))
+        print("thin: {0}".format(thin))
+
+        samples = result.get_chain(discard=burnin, flat=True, thin=thin)
+        log_prob_samples = result.get_log_prob(discard=burnin, flat=True, thin=thin)
+        log_prior_samples = result.get_blobs(discard=burnin, flat=True, thin=thin)
+
+        print("flat chain shape: {0}".format(samples.shape))
+        print("flat log prob shape: {0}".format(log_prob_samples.shape))
+        print("flat log prior shape: {0}".format(log_prior_samples.shape))
+
+        # TODO: modify this to appropriate formula
+        weights = log_prob_samples/log_prob_samples.sum()
+
         emcee_output = {}
         emcee_output["Stats"] = {}
-        emcee_output["Stats"]["Some stats"] = "some stats"
+        emcee_output["Stats"]["tau"] = tau
 
-        # fit_param = self.fit_names
-        #
-        # # The below needs re-implementing
-        # samples = result["weighted_samples"]["points"]
-        # weights = result["weighted_samples"]["weights"]
-        # logl = result["weighted_samples"]["logl"]
-        # mean, cov = result["posterior"]["mean"], result["posterior"]["stdev"]
-        # emcee_output["solution"] = {}
-        # emcee_output["solution"]["Some results"] = "some results"
-        # # emcee_output['solution']['covariance'] = cov
-        # emcee_output["solution"]["fitparams"] = {}
-        #
-        # max_weight = weights.argmax()
-        #
-        # table_data = []
-        #
-        # for idx, param_name in enumerate(fit_param):
-        #     param = {}
-        #     param["mean"] = mean[idx]
-        #     param["sigma"] = cov[idx]
-        #     trace = samples[:, idx]
-        #     q_16, q_50, q_84 = quantile_corner(
-        #         trace, [0.16, 0.5, 0.84], weights=np.asarray(weights)
-        #     )
-        #     param["value"] = q_50
-        #     param["sigma_m"] = q_50 - q_16
-        #     param["sigma_p"] = q_84 - q_50
-        #     param["trace"] = trace
-        #     param["map"] = trace[max_weight]
-        #     table_data.append((param_name, q_50, q_50 - q_16))
-        #
-        #     emcee_output["solution"]["fitparams"][param_name] = param
+        fit_param = self.fit_names
+
+        emcee_output["solution"] = {}
+        emcee_output["solution"]["samples"] = samples
+        emcee_output["solution"]["weights"] = weights
+        emcee_output["solution"]["fitparams"] = {}
+
+        max_weights = weights.argmax()
+
+        table_data = []
+
+        for idx, param_name in enumerate(fit_param):
+            param = {}
+            trace = samples[:, idx]
+            q_16, q_50, q_84 = quantile_corner(
+                trace, [0.16, 0.5, 0.84],
+                weights=weights,
+            )
+            param["value"] = q_50
+            param["sigma_m"] = q_50 - q_16
+            param["sigma_p"] = q_84 - q_50
+            param["trace"] = trace
+            param["map"] = trace[max_weights]
+            table_data.append((param_name, q_50, q_50 - q_16))
+
+            emcee_output["solution"]["fitparams"][param_name] = param
 
         return emcee_output
 
@@ -193,24 +204,23 @@ class EmceeSampler(Optimizer):
             raw_weights
 
         """
-        pass
 
-        # names = self.fit_names
-        # opt_map = self.fit_values
-        # opt_values = self.fit_values
-        # for k, v in self.emcee_output["solution"]["fitparams"].items():
-        #     # if k.endswith('_derived'):
-        #     #     continue
-        #     idx = names.index(k)
-        #     opt_map[idx] = v["map"]
-        #     opt_values[idx] = v["value"]
-        #
-        # yield 0, opt_map, opt_values, [
-        #     ("Statistics", self.emcee_output["Stats"]),
-        #     ("fit_params", self.emcee_output["solution"]["fitparams"]),
-        #     ("tracedata", self.emcee_output["solution"]["samples"]),
-        #     ("weights", self.emcee_output["solution"]["weights"]),
-        # ]
+        names = self.fit_names
+        opt_map = self.fit_values
+        opt_values = self.fit_values
+        for k, v in self.emcee_output["solution"]["fitparams"].items():
+            # if k.endswith('_derived'):
+            #     continue
+            idx = names.index(k)
+            opt_map[idx] = v["map"]
+            opt_values[idx] = v["value"]
+
+        yield 0, opt_map, opt_values, [
+            ("Statistics", self.emcee_output["Stats"]),
+            ("fit_params", self.emcee_output["solution"]["fitparams"]),
+            ("tracedata", self.emcee_output["solution"]["samples"]),
+            ("weights", self.emcee_output["solution"]["weights"]),
+        ]
 
     @classmethod
     def input_keywords(self):

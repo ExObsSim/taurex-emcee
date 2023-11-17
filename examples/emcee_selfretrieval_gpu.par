@@ -1,0 +1,71 @@
+[Global]
+xsec_path = /ariel/data/SOFTWARE_DATA/xsec
+cia_path = /ariel/data/SOFTWARE_DATA/cia
+gpu_allocate_single = True
+
+[Chemistry]
+chemistry_type = free
+fill_gases = H2, He
+ratio = 0.172
+
+    [[CO2]]
+    gas_type = constant
+    mix_ratio=1e-4
+
+    [[H2O]]
+    gas_type = constant
+    mix_ratio = 1e-3
+
+    #[[NH3]]
+    #gas_type = constant
+    #mix_ratio = 1e-6
+
+
+[Temperature]
+profile_type = isothermal
+T = 1265.0
+
+[Planet]
+planet_type = simple
+planet_radius = 0.5
+planet_mass = 1.0
+
+[Star]
+star_type = blackbody
+radius = 1.4
+temperature = 6000
+
+[Model]
+model_type = transmission_cuda
+
+    [[AbsorptionCUDA]]
+
+    #[[CIACUDA]]
+    #cia_pairs = H2-He, H2-H2
+
+    #[[RayleighCUDA]]
+
+[Binning]
+bin_type = manual
+wavelength_grid = 0.3, 5, 30
+
+[Instrument]
+instrument = snr
+SNR = 20
+
+[Observation]
+taurex_spectrum = self
+
+# ------Retrieval related --------------
+
+[Optimizer]
+optimizer = emcee
+nwalkers = 8
+nsteps = 200
+
+[Fitting]
+planet_radius:fit = True
+planet_radius:bounds = 0.1, 1.0
+
+H2O:fit = True
+H2O:bounds = 1e-4, 1e-2
