@@ -18,6 +18,8 @@ class EmceeSampler(Optimizer):
         sigma_fraction=0.1,
         nwalkers: int = None,
         nsteps: int = None,
+        ntau: int = 100,
+        dtau: float = 0.01,
         pool=None,
         moves=None,
         backend=None,
@@ -26,10 +28,15 @@ class EmceeSampler(Optimizer):
 
         self.nwalkers = int(nwalkers)
         self.nsteps = int(nsteps)
+        self.ntau = int(ntau)
+        self.dtau = float(dtau)
         self.pool = pool
         self.moves = moves
         self.backend = backend
+        self.initial_state = None
+        self.mean_acceptance_fraction = None
         self.emcee_output = None
+        self.autocorr = None
 
     def compute_fit(self):
         data = self._observed.spectrum
@@ -56,8 +63,8 @@ class EmceeSampler(Optimizer):
         def emcee_logprob(params):
             # log-probability function called by emcee
             lp = emcee_prior(params)
-            if not np.any(np.isfinite(lp)):
-                return -np.inf
+            if not np.all(np.isfinite(lp)):
+                return np.full(shape=len(params), fill_value=-np.inf)
             return lp + emcee_loglike(params)
 
         ndim = len(self.fitting_parameters)
@@ -73,15 +80,11 @@ class EmceeSampler(Optimizer):
 
         t0 = time.time()
 
-        initial_state = (
-            np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-4
+        self.initial_state = (
+            np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-6
         )
 
-        state = sampler.run_mcmc(
-            initial_state=initial_state,
-            nsteps=self.nsteps,
-            progress=True,
-        )
+        self.run_mcmc(sampler)
 
         t1 = time.time()
 
@@ -90,6 +93,60 @@ class EmceeSampler(Optimizer):
         self.warning("Fit complete.....")
 
         self.emcee_output = self.store_emcee_output(sampler)
+
+    def run_mcmc(self, sampler):
+        # We'll track how the average autocorrelation time estimate changes
+        index = 0
+        self.autocorr = np.empty(self.nsteps)
+
+        # This will be useful to testing convergence
+        old_tau = np.inf
+
+        # Now we'll sample for up to nsteps
+        for sample in sampler.sample(
+            self.initial_state, iterations=self.nsteps, progress=True
+        ):
+            # Only check convergence every 100 steps
+            if sampler.iteration % 100:
+                continue
+
+            # Compute the autocorrelation time so far
+            # Using tol=0 means that we'll always get an estimate even
+            # if it isn't trustworthy
+            tau = sampler.get_autocorr_time(tol=0)
+            self.autocorr[index] = np.mean(tau)
+            index += 1
+
+            # Check convergence
+            converged = np.all(tau * self.ntau < sampler.iteration)
+            converged &= np.all(np.abs(old_tau - tau) / tau < self.dtau)
+            print(f"Converged? {converged}")
+            if converged:
+                break
+            old_tau = tau
+
+        self.mean_acceptance_fraction = np.mean(sampler.acceptance_fraction)
+        print(f"Mean acceptance fraction: {self.mean_acceptance_fraction:.3f}")
+        # if mean_acceptance_fraction < 0.2, it suggests that the sampler is
+        # stuck in a low probability part of parameter space. We can
+        # try using more walkers, a different set of starting points, or
+        # different parameter limits / priors.
+        # if mean_acceptance_fraction > 0.5, it suggests that the sampler
+        # is jumping around a lot and wasting time.
+        # if 0.2 < mean_acceptance_fraction < 0.5, it suggests an optimal
+        # sampling efficiency.
+        if self.mean_acceptance_fraction < 0.2:
+            self.warning(
+                "Mean acceptance fraction is low at {0:.3f}".format(
+                    self.mean_acceptance_fraction
+                )
+            )
+        elif self.mean_acceptance_fraction > 0.5:
+            self.warning(
+                "Mean acceptance fraction is high at {0:.3f}".format(
+                    self.mean_acceptance_fraction
+                )
+            )
 
     def store_emcee_output(self, result):
         """
@@ -108,27 +165,34 @@ class EmceeSampler(Optimizer):
 
         """
 
-        # tau = result.get_autocorr_time()
-        tau = np.array([2, 3])  # for development purposes
+        tau = result.get_autocorr_time(tol=0)
+        self.info(f"tau: {tau}")
+
         burnin = int(2 * np.max(tau))
         thin = int(0.5 * np.min(tau))
-        print("burn-in: {0}".format(burnin))
-        print("thin: {0}".format(thin))
+        self.info(f"burn-in: {burnin}")
+        self.info(f"thin: {thin}")
 
         samples = result.get_chain(discard=burnin, flat=True, thin=thin)
         log_prob_samples = result.get_log_prob(discard=burnin, flat=True, thin=thin)
         log_prior_samples = result.get_blobs(discard=burnin, flat=True, thin=thin)
 
-        print("flat chain shape: {0}".format(samples.shape))
-        print("flat log prob shape: {0}".format(log_prob_samples.shape))
-        print("flat log prior shape: {0}".format(log_prior_samples.shape))
+        self.debug(f"flat chain shape: {samples.shape}")
+        self.debug(f"flat log prob shape: {log_prob_samples.shape}")
+        self.debug(f"flat log prior shape: {log_prior_samples.shape}")
 
-        # TODO: modify this to appropriate formula
-        weights = log_prob_samples/log_prob_samples.sum()
+        weights = np.exp(log_prob_samples - log_prob_samples.max())
+        weights /= weights.sum()
 
         emcee_output = {}
         emcee_output["Stats"] = {}
         emcee_output["Stats"]["tau"] = tau
+        emcee_output["Stats"]["burnin"] = burnin
+        emcee_output["Stats"]["thin"] = thin
+        emcee_output["Stats"][
+            "mean_acceptance_fraction"
+        ] = self.mean_acceptance_fraction
+        emcee_output["Stats"]["autocorr"] = self.autocorr
 
         fit_param = self.fit_names
 
@@ -145,7 +209,8 @@ class EmceeSampler(Optimizer):
             param = {}
             trace = samples[:, idx]
             q_16, q_50, q_84 = quantile_corner(
-                trace, [0.16, 0.5, 0.84],
+                trace,
+                [0.16, 0.5, 0.84],
                 weights=weights,
             )
             param["value"] = q_50
