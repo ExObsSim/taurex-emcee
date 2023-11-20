@@ -61,7 +61,9 @@ ntau = 10
 dtau = 0.1
 #moves = StretchMove, WalkMove
 #moves_weight = 0.2, 0.8
-backend = True
+backend = ../output/test.h5
+run_name = test1
+resume = True
 progress = True
 
 [Fitting]

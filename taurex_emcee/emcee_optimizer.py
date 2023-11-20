@@ -26,6 +26,8 @@ class EmceeSampler(Optimizer):
         moves=None,
         moves_weight=None,
         backend=None,
+        run_name=None,
+        resume=False,
         progress=True,
     ):
         super().__init__("Emcee", observed, model, sigma_fraction)
@@ -50,7 +52,11 @@ class EmceeSampler(Optimizer):
                 for move, weight in zip(moves, moves_weight):
                     self.moves.append((getattr(emcee.moves, move)(), weight))
 
-        self.backend = backend
+        self.backend = (
+            emcee.backends.HDFBackend(backend, name=run_name) if backend else None
+        )
+        self.resume = resume
+
         self.progress = progress
 
         self.initial_state = None
@@ -91,33 +97,39 @@ class EmceeSampler(Optimizer):
         self.warning("Number of dimensions {}".format(ndim))
         self.warning("Fitting parameters {}".format(self.fitting_parameters))
 
+        if self.backend and not self.resume:
+            self.backend.reset(self.nwalkers, ndim)
+
+        # Set up the sampler
         self.info("Instantiating fit......")
         sampler = emcee.EnsembleSampler(
             nwalkers=self.nwalkers,
             ndim=ndim,
             log_prob_fn=emcee_logprob,
             moves=self.moves,
+            backend=self.backend,
         )
 
         t0 = time.time()
 
+        # Initialize the walkers
         self.initial_state = (
             np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-5
         )
 
+        # Run the fit
         result = self.run_mcmc(sampler)
 
         t1 = time.time()
-
         self.warning("Time taken to run 'Emcee' is %s seconds", t1 - t0)
-
         self.warning("Fit complete.....")
 
+        # Store the output
         self.emcee_output = self.store_emcee_output(result)
 
     def run_mcmc(self, sampler):
         index = 0
-        self.autocorr = np.zeros(self.nsteps)
+        self.autocorr = np.empty(self.nsteps)
         old_tau = tau = np.inf
 
         for sample in sampler.sample(
@@ -125,7 +137,7 @@ class EmceeSampler(Optimizer):
             iterations=self.nsteps,
             progress=self.progress,
         ):
-            # Only check convergence every 100 steps
+            # Only check convergence every 25 steps
             if sampler.iteration % 25:
                 continue
 
