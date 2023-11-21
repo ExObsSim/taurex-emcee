@@ -3,6 +3,7 @@ import time
 
 import emcee
 import numpy as np
+from scipy.stats import uniform
 from taurex.optimizer import Optimizer
 from taurex.util.util import quantile_corner
 from taurex.util.util import recursively_save_dict_contents_to_output
@@ -39,18 +40,9 @@ class EmceeSampler(Optimizer):
         self.burnin = burnin
         self.thin = thin
         self.pool = pool
-        self.moves = moves
-        if moves is not None and moves_weight is not None:
-            if isinstance(moves, str):
-                self.moves = getattr(emcee.moves, moves)()
-            elif isinstance(moves_weight, list) and len(moves) != len(moves_weight):
-                raise ValueError("Number of moves and moves_weight must be the same")
-            elif np.sum(moves_weight) != 1:
-                raise ValueError("Moves weights must sum to 1")
-            else:
-                self.moves = []
-                for move, weight in zip(moves, moves_weight):
-                    self.moves.append((getattr(emcee.moves, move)(), weight))
+
+        self.moves = None
+        self.get_moves(moves, moves_weight)
 
         self.backend = (
             emcee.backends.HDFBackend(backend, name=run_name) if backend else None
@@ -63,6 +55,21 @@ class EmceeSampler(Optimizer):
         self.mean_acceptance_fraction = None
         self.emcee_output = None
         self.autocorr = None
+
+    def get_moves(self, moves, moves_weight):
+        self.moves = moves
+        if moves is not None and moves_weight is not None:
+            if isinstance(moves, str):
+                self.moves = getattr(emcee.moves, moves)()
+            elif isinstance(moves_weight, list) and len(moves) != len(moves_weight):
+                raise ValueError("Number of moves and moves_weight must be the same")
+            elif np.sum(moves_weight) != 1:
+                raise ValueError("Moves weights must sum to 1")
+            else:
+                self.moves = [
+                    (getattr(emcee.moves, move)(), weight)
+                    for move, weight in zip(moves, moves_weight)
+                ]
 
     def compute_fit(self):
         data = self._observed.spectrum
@@ -77,12 +84,15 @@ class EmceeSampler(Optimizer):
             return loglike
 
         def emcee_prior(theta):
-            # prior distributions called by emcee. Implements a uniform prior
-            # converting parameters from normalised grid to uniform prior
             cube = []
 
             for idx, prior in enumerate(self.fitting_priors):
-                cube.append(prior.sample(theta[idx]))
+                if theta[idx] < prior._low_bounds or theta[idx] > prior._up_bounds:
+                    val = -np.inf
+                else:
+                    val = 0
+
+                cube.append(val)
 
             return np.array(cube)
 
@@ -114,7 +124,7 @@ class EmceeSampler(Optimizer):
 
         # Initialize the walkers
         self.initial_state = (
-            np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-5
+            np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-3
         )
 
         # Run the fit

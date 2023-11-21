@@ -12,10 +12,6 @@ ratio = 0.172
     gas_type = constant
     mix_ratio = 1e-4
 
-    #[[CH4]]
-    #gas_type = constant
-    #mix_ratio = 1e-4
-
 [Temperature]
 profile_type = isothermal
 T = 1000
@@ -55,7 +51,7 @@ taurex_spectrum = self
 
 [Optimizer]
 optimizer = emcee
-nwalkers = 4
+nwalkers = 6
 nsteps = 1000
 ntau = 10
 dtau = 0.1
@@ -63,21 +59,17 @@ dtau = 0.1
 #moves_weight = 0.2, 0.8
 backend = ../output/test.h5
 run_name = test1
-resume = True
+resume = False
 progress = True
 
 [Fitting]
 planet_radius:fit = True
 planet_radius:factor = 0.9, 1.1
 
-#T:fit = True
-#T:mode = linear
-#T:factor = 0.99, 1.01
+T:fit = True
+T:mode = linear
+T:bounds = 999, 1025
 
 H2O:fit = True
-H2O:mode = linear
-H2O:bounds = 1e-5, 1e-3
-
-#CH4:fit = True
-#CH4:mode = linear
-#CH4:bounds = 1e-5, 1e-3
+H2O:mode = log
+H2O:bounds = 0.99e-4, 1.1e-4
