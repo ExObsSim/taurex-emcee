@@ -51,25 +51,19 @@ taurex_spectrum = self
 
 [Optimizer]
 optimizer = emcee
-nwalkers = 6
-nsteps = 1000
-ntau = 10
-dtau = 0.1
-#moves = StretchMove, WalkMove
-#moves_weight = 0.2, 0.8
+nwalkers = 8
 backend = ../output/test.h5
 run_name = test1
-resume = False
-progress = True
+resume = True
+progress = False
 
 [Fitting]
 planet_radius:fit = True
 planet_radius:factor = 0.9, 1.1
 
 T:fit = True
-T:mode = linear
-T:bounds = 999, 1025
+T:bounds = 900, 1100
 
 H2O:fit = True
 H2O:mode = log
-H2O:bounds = 0.99e-4, 1.1e-4
+H2O:bounds = 1e-12, 1e-1

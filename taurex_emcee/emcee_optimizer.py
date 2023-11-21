@@ -3,7 +3,6 @@ import time
 
 import emcee
 import numpy as np
-from scipy.stats import uniform
 from taurex.optimizer import Optimizer
 from taurex.util.util import quantile_corner
 from taurex.util.util import recursively_save_dict_contents_to_output
@@ -18,7 +17,7 @@ class EmceeSampler(Optimizer):
         model=None,
         sigma_fraction=0.1,
         nwalkers: int = None,
-        nsteps: int = None,
+        nsteps=1e9,
         ntau: int = 100,
         dtau: float = 0.01,
         burnin=None,
@@ -138,8 +137,7 @@ class EmceeSampler(Optimizer):
         self.emcee_output = self.store_emcee_output(result)
 
     def run_mcmc(self, sampler):
-        index = 0
-        self.autocorr = np.empty(self.nsteps)
+        self.autocorr = []
         old_tau = tau = np.inf
 
         for sample in sampler.sample(
@@ -147,16 +145,15 @@ class EmceeSampler(Optimizer):
             iterations=self.nsteps,
             progress=self.progress,
         ):
-            # Only check convergence every 25 steps
-            if sampler.iteration % 25:
+            # Only check convergence every 100 steps
+            if sampler.iteration % 100:
                 continue
 
             # Compute the autocorrelation time so far
             # Using tol=0 means that we'll always get an estimate even
             # if it isn't trustworthy
             tau = sampler.get_autocorr_time(tol=0)
-            self.autocorr[index] = np.nanmean(tau)
-            index += 1
+            self.autocorr.append(np.nanmean(tau))
 
             # Check convergence
             converged = np.all(tau * self.ntau < sampler.iteration)
@@ -338,19 +335,38 @@ class EmceeSampler(Optimizer):
 
     BIBTEX_ENTRIES = [
         """
-        @article{Author,
-            title={},
-            volume={},
-            ISSN={},
-            url={},
-            DOI={},
-            number={},
-            journal={},
-            publisher={},
-            author={},
-            year={},
-            month={},
-            pages={}
+        @ARTICLE{2013PASP..125..306F,
+               author = {{Foreman-Mackey}, Daniel and {Hogg}, David W. and {Lang}, Dustin and et al.},
+                title = "{emcee: The MCMC Hammer}",
+              journal = {\pasp},
+             keywords = {Astrophysics - Instrumentation and Methods for Astrophysics, Physics - Computational Physics, Statistics - Computation},
+                 year = 2013,
+                month = mar,
+               volume = {125},
+               number = {925},
+                pages = {306},
+                  doi = {10.1086/670067},
+        archivePrefix = {arXiv},
+               eprint = {1202.3665},
+         primaryClass = {astro-ph.IM},
+               adsurl = {https://ui.adsabs.harvard.edu/abs/2013PASP..125..306F},
+              adsnote = {Provided by the SAO/NASA Astrophysics Data System}
         }
-       """,
+        """,
+        """
+        @ARTICLE{2010CAMCS...5...65G,
+               author = {{Goodman}, Jonathan and {Weare}, Jonathan},
+                title = "{Ensemble samplers with affine invariance}",
+              journal = {Communications in Applied Mathematics and Computational Science},
+             keywords = {Markov chain Monte Carlo, affine invariance, ensemble samplers},
+                 year = 2010,
+                month = jan,
+               volume = {5},
+               number = {1},
+                pages = {65-80},
+                  doi = {10.2140/camcos.2010.5.65},
+               adsurl = {https://ui.adsabs.harvard.edu/abs/2010CAMCS...5...65G},
+              adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+        }
+        """,
     ]
