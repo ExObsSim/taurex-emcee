@@ -15,20 +15,20 @@ class EmceeSampler(Optimizer):
         self,
         observed=None,
         model=None,
-        sigma_fraction=0.1,
+        sigma_fraction: float = 0.1,
         nwalkers: int = None,
-        nsteps=1e9,
+        nsteps: int = 1e9,
         ntau: int = 100,
         dtau: float = 0.01,
-        burnin=None,
-        thin=None,
+        burnin: int = None,
+        thin: int = None,
         pool=None,
         moves=None,
         moves_weight=None,
         backend=None,
-        run_name=None,
-        resume=False,
-        progress=True,
+        run_name: str = "test",
+        resume: bool = False,
+        progress: bool = False,
     ):
         super().__init__("Emcee", observed, model, sigma_fraction)
 
@@ -36,15 +36,16 @@ class EmceeSampler(Optimizer):
         self.nsteps = int(nsteps)
         self.ntau = int(ntau)
         self.dtau = float(dtau)
-        self.burnin = burnin
-        self.thin = thin
+        self.burnin = int(burnin) if burnin is not None else None
+        self.thin = int(thin) if thin is not None else None
         self.pool = pool
 
         self.moves = None
         self.get_moves(moves, moves_weight)
 
+        self.run_name = str(run_name)
         self.backend = (
-            emcee.backends.HDFBackend(backend, name=run_name) if backend else None
+            emcee.backends.HDFBackend(backend, name=self.run_name) if backend else None
         )
         self.resume = resume
 
@@ -82,11 +83,11 @@ class EmceeSampler(Optimizer):
             loglike = -np.sum(np.log(datastd * sqrtpi)) - 0.5 * chi_t
             return loglike
 
-        def emcee_prior(theta):
+        def emcee_prior(params):
             cube = []
 
             for idx, prior in enumerate(self.fitting_priors):
-                if theta[idx] < prior._low_bounds or theta[idx] > prior._up_bounds:
+                if params[idx] < prior._low_bounds or params[idx] > prior._up_bounds:
                     val = -np.inf
                 else:
                     val = 0
