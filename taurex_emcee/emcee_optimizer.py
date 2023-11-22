@@ -32,7 +32,7 @@ class EmceeSampler(Optimizer):
     ):
         super().__init__("Emcee", observed, model, sigma_fraction)
 
-        self.nwalkers = int(nwalkers)
+        self.nwalkers = int(nwalkers) if nwalkers is not None else None
         self.nsteps = int(nsteps)
         self.ntau = int(ntau)
         self.dtau = float(dtau)
@@ -106,6 +106,9 @@ class EmceeSampler(Optimizer):
         ndim = len(self.fitting_parameters)
         self.warning("Number of dimensions {}".format(ndim))
         self.warning("Fitting parameters {}".format(self.fitting_parameters))
+
+        if self.nwalkers is None:
+            self.nwalkers = 2 * ndim + 2
 
         if self.backend and not self.resume:
             self.backend.reset(self.nwalkers, ndim)
