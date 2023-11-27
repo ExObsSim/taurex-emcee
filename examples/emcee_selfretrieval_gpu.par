@@ -12,6 +12,10 @@ ratio = 0.172
     gas_type = constant
     mix_ratio = 1e-4
 
+    [[CH4]]
+    gas_type = constant
+    mix_ratio = 1e-4    
+
 [Temperature]
 profile_type = isothermal
 T = 1000
@@ -31,10 +35,10 @@ model_type = transmission_cuda
 
     [[AbsorptionCUDA]]
 
-    #[[CIACUDA]]
-    #cia_pairs = H2-He, H2-H2
+    [[CIACUDA]]
+    cia_pairs = H2-He, H2-H2
 
-    #[[RayleighCUDA]]
+    [[RayleighCUDA]]
 
 [Binning]
 bin_type = manual
@@ -51,10 +55,10 @@ taurex_spectrum = self
 
 [Optimizer]
 optimizer = emcee
-nwalkers = 8
-backend = ../output/test.h5
-run_name = test1
-resume = True
+nwalkers = 16
+backend = ../output/run1/emcee.h5
+run_name = full
+resume = False
 progress = False
 
 [Fitting]
@@ -67,3 +71,7 @@ T:bounds = 900, 1100
 H2O:fit = True
 H2O:mode = log
 H2O:bounds = 1e-12, 1e-1
+
+CH4:fit = True
+CH4:mode = log
+CH4:bounds = 1e-12, 1e-1
