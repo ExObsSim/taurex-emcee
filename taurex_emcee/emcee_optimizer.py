@@ -3,14 +3,13 @@ import time
 
 import emcee
 import numpy as np
+from pathlib import Path
 from taurex.optimizer import Optimizer
 from taurex.util.util import quantile_corner
 from taurex.util.util import recursively_save_dict_contents_to_output
 
 
 class EmceeSampler(Optimizer):
-    os.environ["OMP_NUM_THREADS"] = "1"
-
     def __init__(
         self,
         observed=None,
@@ -43,10 +42,14 @@ class EmceeSampler(Optimizer):
         self.moves = None
         self.get_moves(moves, moves_weight)
 
+        self.backend = None
         self.run_name = str(run_name)
-        self.backend = (
-            emcee.backends.HDFBackend(backend, name=self.run_name) if backend else None
-        )
+        if backend:
+            backend_path = os.path.dirname(backend)
+            Path(backend_path).mkdir(parents=True, exist_ok=True)
+            if not backend.endswith(".h5"):
+                backend = backend + ".h5"
+            self.backend = emcee.backends.HDFBackend(backend, name=self.run_name)
         self.resume = resume
 
         self.progress = progress
@@ -100,8 +103,8 @@ class EmceeSampler(Optimizer):
             # log-probability function called by emcee
             lp = emcee_prior(params)
             if not np.all(np.isfinite(lp)):
-                return np.full(shape=len(params), fill_value=-np.inf)
-            return lp + emcee_loglike(params)
+                return -np.inf
+            return emcee_loglike(params)
 
         ndim = len(self.fitting_parameters)
         self.warning("Number of dimensions {}".format(ndim))
@@ -127,15 +130,15 @@ class EmceeSampler(Optimizer):
 
         # Initialize the walkers
         self.initial_state = (
-            np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-3
+            np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-4
         )
 
         # Run the fit
         result = self.run_mcmc(sampler)
 
         t1 = time.time()
-        self.warning("Time taken to run 'Emcee' is %s seconds", t1 - t0)
-        self.warning("Fit complete.....")
+        self.info("Time taken to run 'Emcee' is %s seconds", t1 - t0)
+        self.info("Fit complete.....")
 
         # Store the output
         self.emcee_output = self.store_emcee_output(result)
