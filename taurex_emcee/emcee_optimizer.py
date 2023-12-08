@@ -1,12 +1,17 @@
 import os
 import time
+import logging
 
 import emcee
 import numpy as np
+import matplotlib.pyplot as plt
 from pathlib import Path
 from taurex.optimizer import Optimizer
 from taurex.util.util import quantile_corner
 from taurex.util.util import recursively_save_dict_contents_to_output
+from .mcmc import ReactiveAffineInvariantSampler
+from .mcmc import create_logger
+from getdist import MCSamples, plots
 
 
 class EmceeSampler(Optimizer):
@@ -15,64 +20,8 @@ class EmceeSampler(Optimizer):
         observed=None,
         model=None,
         sigma_fraction: float = 0.1,
-        nwalkers: int = None,
-        nsteps: int = 1e9,
-        ntau: int = 100,
-        dtau: float = 0.01,
-        burnin: int = None,
-        thin: int = None,
-        pool=None,
-        moves=None,
-        moves_weight=None,
-        backend=None,
-        run_name: str = "test",
-        resume: bool = False,
-        progress: bool = False,
     ):
         super().__init__("Emcee", observed, model, sigma_fraction)
-
-        self.nwalkers = int(nwalkers) if nwalkers is not None else None
-        self.nsteps = int(nsteps)
-        self.ntau = int(ntau)
-        self.dtau = float(dtau)
-        self.burnin = int(burnin) if burnin is not None else None
-        self.thin = int(thin) if thin is not None else None
-        self.pool = pool
-
-        self.moves = None
-        self.get_moves(moves, moves_weight)
-
-        self.backend = None
-        self.run_name = str(run_name)
-        if backend:
-            backend_path = os.path.dirname(backend)
-            Path(backend_path).mkdir(parents=True, exist_ok=True)
-            if not backend.endswith(".h5"):
-                backend = backend + ".h5"
-            self.backend = emcee.backends.HDFBackend(backend, name=self.run_name)
-        self.resume = resume
-
-        self.progress = progress
-
-        self.initial_state = None
-        self.mean_acceptance_fraction = None
-        self.emcee_output = None
-        self.autocorr = None
-
-    def get_moves(self, moves, moves_weight):
-        self.moves = moves
-        if moves is not None and moves_weight is not None:
-            if isinstance(moves, str):
-                self.moves = getattr(emcee.moves, moves)()
-            elif isinstance(moves_weight, list) and len(moves) != len(moves_weight):
-                raise ValueError("Number of moves and moves_weight must be the same")
-            elif np.sum(moves_weight) != 1:
-                raise ValueError("Moves weights must sum to 1")
-            else:
-                self.moves = [
-                    (getattr(emcee.moves, move)(), weight)
-                    for move, weight in zip(moves, moves_weight)
-                ]
 
     def compute_fit(self):
         data = self._observed.spectrum
@@ -80,196 +29,67 @@ class EmceeSampler(Optimizer):
         sqrtpi = np.sqrt(2 * np.pi)
 
         def emcee_loglike(params):
+            data = self._observed.spectrum
+            datastd = self._observed.errorBar
             # log-likelihood function called by emcee
             fit_params_container = np.array(params)
             chi_t = self.chisq_trans(fit_params_container, data, datastd)
             loglike = -np.sum(np.log(datastd * sqrtpi)) - 0.5 * chi_t
             return loglike
 
-        def emcee_prior(params):
+        def emcee_transform(params):
             cube = []
-
             for idx, prior in enumerate(self.fitting_priors):
-                if params[idx] < prior._low_bounds or params[idx] > prior._up_bounds:
-                    val = -np.inf
-                else:
-                    val = 0
-
-                cube.append(val)
-
+                cube.append(prior.sample(params[idx]))
             return np.array(cube)
 
-        def emcee_logprob(params):
-            # log-probability function called by emcee
-            lp = emcee_prior(params)
-            if not np.all(np.isfinite(lp)):
-                return -np.inf
-            return emcee_loglike(params)
-
         ndim = len(self.fitting_parameters)
-        self.warning("Number of dimensions {}".format(ndim))
-        self.warning("Fitting parameters {}".format(self.fitting_parameters))
-
-        if self.nwalkers is None:
-            self.nwalkers = 2 * ndim + 2
-
-        if self.backend and not self.resume:
-            self.backend.reset(self.nwalkers, ndim)
-
-        # Set up the sampler
-        self.info("Instantiating fit......")
-        sampler = emcee.EnsembleSampler(
-            nwalkers=self.nwalkers,
-            ndim=ndim,
-            log_prob_fn=emcee_logprob,
-            moves=self.moves,
-            backend=self.backend,
-        )
+        self.info("Number of dimensions {}".format(ndim))
+        self.info("Fitting parameters {}".format(self.fitting_parameters))
 
         t0 = time.time()
 
-        # Initialize the walkers
-        self.initial_state = (
-            np.array(self.fit_values) + np.random.randn(self.nwalkers, ndim) * 1e-4
+        create_logger("autoemcee", level=logging.DEBUG)
+        sampler = ReactiveAffineInvariantSampler(
+            self.fit_names,
+            loglike=emcee_loglike,
+            transform=emcee_transform,
+            vectorized=False,
+            sampler="goodman-weare",
         )
 
-        # Run the fit
-        result = self.run_mcmc(sampler)
+        sampler.run(
+            num_global_samples=10,
+            num_chains=2,
+            max_improvement_loops=2,
+            num_initial_steps=10,
+            num_walkers=4,
+            max_ncalls=10000,
+            min_autocorr_times=1,
+            progress=True,
+        )
+        if sampler.mpi_rank != 0:
+            return
+        sampler.print_results()
+
+        samples_g = MCSamples(
+            samples=sampler.results["samples"],
+            names=sampler.results["paramnames"],
+            label="whatever",
+        )
+        # settings=dict(smooth_scale_2D=1))
+
+        mcsamples = [samples_g]
+        g = plots.get_subplot_plotter(width_inch=8)
+        g.settings.num_plot_contours = 3
+        g.triangle_plot(mcsamples, filled=False, contour_colors=plt.cm.Set1.colors)
+        plt.savefig("posterior.pdf", bbox_inches="tight")
+        plt.close()
 
         t1 = time.time()
         self.info("Time taken to run 'Emcee' is %s seconds", t1 - t0)
         self.info("Fit complete.....")
-
-        # Store the output
-        self.emcee_output = self.store_emcee_output(result)
-
-    def run_mcmc(self, sampler):
-        self.autocorr = []
-        old_tau = tau = np.inf
-
-        for sample in sampler.sample(
-            self.initial_state,
-            iterations=self.nsteps,
-            progress=self.progress,
-        ):
-            # Only check convergence every 100 steps
-            if sampler.iteration % 100:
-                continue
-
-            # Compute the autocorrelation time so far
-            # Using tol=0 means that we'll always get an estimate even
-            # if it isn't trustworthy
-            tau = sampler.get_autocorr_time(tol=0)
-            self.autocorr.append(np.nanmean(tau))
-
-            # Check convergence
-            converged = np.all(tau * self.ntau < sampler.iteration)
-            print(f"N x mean tau: {np.nanmean(tau * self.ntau):.3f}")
-
-            self.nsteps = np.nanmean(tau * self.ntau)
-
-            print(f"Sampler iteration: {sampler.iteration}")
-            tau_diff = np.abs(old_tau - tau) / tau
-            print("tau change:", tau_diff)
-            converged &= np.all(tau_diff < self.dtau)
-            print(f"Converged? {converged}")
-            if converged:
-                break
-            old_tau = tau
-
-        self.mean_acceptance_fraction = np.nanmean(sampler.acceptance_fraction)
-        print(f"Mean acceptance fraction: {self.mean_acceptance_fraction:.3f}")
-        # if mean_acceptance_fraction < 0.2, it suggests that the sampler is
-        # stuck in a low probability part of parameter space. We can
-        # try using more walkers, a different set of starting points, or
-        # different parameter limits / priors.
-        # if mean_acceptance_fraction > 0.5, it suggests that the sampler
-        # is jumping around a lot and wasting time.
-        if self.mean_acceptance_fraction < 0.2:
-            self.warning("Mean acceptance fraction is low")
-        elif self.mean_acceptance_fraction > 0.5:
-            self.warning("Mean acceptance fraction is high")
-
-        result = {}
-
-        self.info(f"tau: {tau}")
-        result["tau"] = tau
-
-        self.burnin = int(2 * np.max(tau)) if self.burnin is None else self.burnin
-        self.info(f"burn-in: {self.burnin}")
-        self.thin = int(0.5 * np.min(tau)) if self.thin is None else self.thin
-        self.info(f"thin: {self.thin}")
-
-        samples = sampler.get_chain(discard=self.burnin, flat=True, thin=self.thin)
-        self.debug(f"flat chain shape: {samples.shape}")
-        result["samples"] = samples
-
-        log_prob_samples = sampler.get_log_prob(
-            discard=self.burnin, flat=True, thin=self.thin
-        )
-        self.debug(f"flat log prob shape: {log_prob_samples.shape}")
-        weights = np.exp(log_prob_samples - log_prob_samples.max())
-        weights /= weights.sum()
-        result["weights"] = weights
-
-        return result
-
-    def store_emcee_output(self, result):
-        """
-        This turns the output from emcee into a dictionary that can
-        be output by TauREx
-
-        Parameters
-        ----------
-        result: :obj:`dict`
-            Result from an emcee sample call
-
-        Returns
-        -------
-        dict
-            Formatted dictionary for output
-
-        """
-
-        emcee_output = {}
-        emcee_output["Stats"] = {}
-        emcee_output["Stats"]["tau"] = result["tau"]
-        emcee_output["Stats"]["burnin"] = self.burnin
-        emcee_output["Stats"]["thin"] = self.thin
-        emcee_output["Stats"][
-            "mean_acceptance_fraction"
-        ] = self.mean_acceptance_fraction
-        emcee_output["Stats"]["autocorr"] = self.autocorr
-
-        fit_param = self.fit_names
-
-        emcee_output["solution"] = {}
-        emcee_output["solution"]["samples"] = result["samples"]
-        emcee_output["solution"]["weights"] = result["weights"]
-        emcee_output["solution"]["fitparams"] = {}
-
-        max_weights = result["weights"].argmax()
-
-        table_data = []
-
-        for idx, param_name in enumerate(fit_param):
-            param = {}
-            trace = result["samples"][:, idx]
-            q_16, q_50, q_84 = quantile_corner(
-                trace,
-                [0.16, 0.5, 0.84],
-                weights=result["weights"],
-            )
-            param["value"] = q_50
-            param["sigma_m"] = q_50 - q_16
-            param["sigma_p"] = q_84 - q_50
-            param["trace"] = trace
-            param["map"] = trace[max_weights]
-            table_data.append((param_name, q_50, q_50 - q_16))
-
-            emcee_output["solution"]["fitparams"][param_name] = param
-
-        return emcee_output
+        exit()
 
     def get_samples(self, solution_idx):
         return self.emcee_output["solution"]["samples"]

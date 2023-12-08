@@ -133,3 +133,6 @@ dmypy.json
 
 # Output folder
 /output
+
+# Lab folder
+/lab
