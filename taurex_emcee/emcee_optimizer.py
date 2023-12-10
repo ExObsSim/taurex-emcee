@@ -1,17 +1,10 @@
-import os
 import time
-import logging
 
-import emcee
 import numpy as np
-import matplotlib.pyplot as plt
-from pathlib import Path
+from scipy import stats
 from taurex.optimizer import Optimizer
-from taurex.util.util import quantile_corner
 from taurex.util.util import recursively_save_dict_contents_to_output
 from .mcmc import ReactiveAffineInvariantSampler
-from .mcmc import create_logger
-from getdist import MCSamples, plots
 
 
 class EmceeSampler(Optimizer):
@@ -20,8 +13,25 @@ class EmceeSampler(Optimizer):
         observed=None,
         model=None,
         sigma_fraction: float = 0.1,
+        num_global_samples=10000,
+        num_chains=4,
+        num_walkers=None,
+        max_ncalls=1000000,
+        max_improvement_loops=4,
+        num_initial_steps=100,
+        min_autocorr_times=0,
+        progress=True,
     ):
         super().__init__("Emcee", observed, model, sigma_fraction)
+
+        self.num_global_samples = int(num_global_samples)
+        self.num_chains = int(num_chains)
+        self.num_walkers = int(num_walkers)
+        self.max_ncalls = int(max_ncalls)
+        self.max_improvement_loops = int(max_improvement_loops)
+        self.num_initial_steps = int(num_initial_steps)
+        self.min_autocorr_times = min_autocorr_times
+        self.progress = progress
 
     def compute_fit(self):
         data = self._observed.spectrum
@@ -49,47 +59,72 @@ class EmceeSampler(Optimizer):
 
         t0 = time.time()
 
-        create_logger("autoemcee", level=logging.DEBUG)
         sampler = ReactiveAffineInvariantSampler(
             self.fit_names,
             loglike=emcee_loglike,
             transform=emcee_transform,
-            vectorized=False,
             sampler="goodman-weare",
         )
 
         sampler.run(
-            num_global_samples=10,
-            num_chains=2,
-            max_improvement_loops=2,
-            num_initial_steps=10,
-            num_walkers=4,
-            max_ncalls=10000,
-            min_autocorr_times=1,
-            progress=True,
+            num_global_samples=self.num_global_samples,
+            num_chains=self.num_chains,
+            num_walkers=self.num_walkers,
+            max_ncalls=self.max_ncalls,
+            max_improvement_loops=self.max_improvement_loops,
+            num_initial_steps=self.num_initial_steps,
+            min_autocorr_times=self.min_autocorr_times,
+            progress=self.progress,
         )
-        if sampler.mpi_rank != 0:
-            return
-        sampler.print_results()
-
-        samples_g = MCSamples(
-            samples=sampler.results["samples"],
-            names=sampler.results["paramnames"],
-            label="whatever",
-        )
-        # settings=dict(smooth_scale_2D=1))
-
-        mcsamples = [samples_g]
-        g = plots.get_subplot_plotter(width_inch=8)
-        g.settings.num_plot_contours = 3
-        g.triangle_plot(mcsamples, filled=False, contour_colors=plt.cm.Set1.colors)
-        plt.savefig("posterior.pdf", bbox_inches="tight")
-        plt.close()
 
         t1 = time.time()
         self.info("Time taken to run 'Emcee' is %s seconds", t1 - t0)
         self.info("Fit complete.....")
-        exit()
+
+        self.emcee_output = self.store_emcee_output(sampler.results)
+        self.info("Output stored")
+
+    def store_emcee_output(self, result):
+        """
+        This turns the output from emcee into a dictionary that can
+        be output by TauREx
+
+        Parameters
+        ----------
+        result: :obj:`dict`
+            Result from an emcee sample call
+
+        Returns
+        -------
+        dict
+            Formatted dictionary for output
+
+        """
+
+        emcee_output = {}
+        emcee_output["Stats"] = {}
+        emcee_output["Stats"]["ncall"] = result["ncall"]
+        emcee_output["Stats"]["converged"] = result["converged"]
+
+        emcee_output["solution"] = {}
+        emcee_output["solution"]["samples"] = result["samples"]
+        emcee_output["solution"]["weights"] = np.ones(len(result["samples"]))
+        emcee_output["solution"]["fitparams"] = {}
+
+        posterior = result["posterior"]
+        for idx, param_name in enumerate(self.fit_names):
+            param = {}
+            param["value"] = posterior["median"][idx]
+            param["mean"] = posterior["mean"][idx]
+            param["emcee_sigma"] = posterior["stdev"][idx]
+            param["sigma_m"] = param["value"] - posterior["errlo"][idx]
+            param["sigma_p"] = posterior["errup"][idx] - param["value"]
+            param["trace"] = result["samples"][:, idx]
+            param["map"] = stats.mode(result["samples"][:, idx])[0]
+
+            emcee_output["solution"]["fitparams"][param_name] = param
+
+        return emcee_output
 
     def get_samples(self, solution_idx):
         return self.emcee_output["solution"]["samples"]
