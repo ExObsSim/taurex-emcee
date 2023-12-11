@@ -114,7 +114,6 @@ class ReactiveAffineInvariantSampler(object):
         transform=None,
         num_test_samples=2,
         vectorized=False,
-        sampler="goodman-weare",
     ):
         """Initialise sampler.
 
@@ -129,9 +128,6 @@ class ReactiveAffineInvariantSampler(object):
         transform: function
             parameter transform from unit cube to physical parameters.
             Receives multiple cube vectors, returns multiple parameter vectors.
-        sampler: str
-            if 'goodman-weare': use Goodman & Weare's affine invariant MCMC ensemble sampler
-            if 'slice': use Karamanis & Beutler (2020)'s ensemble slice sampler
         vectorized: bool
             if true, likelihood and transform receive arrays of points, and return arrays
 
@@ -147,9 +143,6 @@ class ReactiveAffineInvariantSampler(object):
 
         self.ncall = 0
         self.use_mpi = False
-        self.sampler = sampler
-        if sampler not in ("goodman-weare", "slice"):
-            raise ValueError("sampler needs to be one of ('goodman-weare', 'slice')")
         try:
             from mpi4py import MPI
 
@@ -339,23 +332,9 @@ class ReactiveAffineInvariantSampler(object):
         for chain in range(num_chains_here):
             u, p, L = self.find_starting_walkers(num_global_samples, num_walkers)
             ncall_here += num_global_samples
-
-            if self.sampler == "goodman-weare":
-                sampler = emcee.EnsembleSampler(
-                    num_walkers, self.x_dim, self._emcee_logprob, vectorize=True
-                )
-            elif self.sampler == "slice":
-                pass
-                # import zeus
-
-                # sampler = zeus.EnsembleSampler(
-                #     nwalkers=num_walkers,
-                #     ndim=self.x_dim,
-                #     logprob_fn=self._emcee_logprob,
-                #     vectorize=True,
-                #     maxiter=1e10,
-                #     maxsteps=1e10,
-                # )
+            sampler = emcee.EnsembleSampler(
+                num_walkers, self.x_dim, self._emcee_logprob, vectorize=True
+            )
             self.samplers.append(sampler)
             sampler.run_mcmc(u, num_steps, progress=self.log and progress)
             ncall_here += num_walkers
