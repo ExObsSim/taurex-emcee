@@ -26,7 +26,7 @@ class EmceeSampler(Optimizer):
 
         self.num_global_samples = int(num_global_samples)
         self.num_chains = int(num_chains)
-        self.num_walkers = int(num_walkers)
+        self.num_walkers = int(num_walkers) if num_walkers else None
         self.max_ncalls = int(max_ncalls)
         self.max_improvement_loops = int(max_improvement_loops)
         self.num_initial_steps = int(num_initial_steps)
@@ -39,8 +39,6 @@ class EmceeSampler(Optimizer):
         sqrtpi = np.sqrt(2 * np.pi)
 
         def emcee_loglike(params):
-            data = self._observed.spectrum
-            datastd = self._observed.errorBar
             # log-likelihood function called by emcee
             fit_params_container = np.array(params)
             chi_t = self.chisq_trans(fit_params_container, data, datastd)
@@ -48,6 +46,8 @@ class EmceeSampler(Optimizer):
             return loglike
 
         def emcee_transform(params):
+            # prior distributions called by emcee. Implements a uniform prior
+            # converting parameters from normalised grid to uniform prior
             cube = []
             for idx, prior in enumerate(self.fitting_priors):
                 cube.append(prior.sample(params[idx]))
@@ -120,7 +120,7 @@ class EmceeSampler(Optimizer):
             param["sigma_m"] = param["value"] - posterior["errlo"][idx]
             param["sigma_p"] = posterior["errup"][idx] - param["value"]
             param["trace"] = result["samples"][:, idx]
-            param["map"] = stats.mode(result["samples"][:, idx])[0]
+            param["emcee_map"] = stats.mode(result["samples"][:, idx])[0]
 
             emcee_output["solution"]["fitparams"][param_name] = param
 
@@ -131,6 +131,20 @@ class EmceeSampler(Optimizer):
 
     def get_weights(self, solution_idx):
         return self.emcee_output["solution"]["weights"]
+
+    def write_optimizer(self, output):
+        opt = super().write_optimizer(output)
+
+        # num_global_samples (parameter, ...)
+        opt.write_scalar("num_global_samples ", self.num_global_samples)
+        opt.write_scalar("num_chains", self.num_chains)
+        opt.write_scalar("num_walkers", self.num_walkers)
+        opt.write_scalar("max_ncalls", self.max_ncalls)
+        opt.write_scalar("max_improvement_loops", self.max_improvement_loops)
+        opt.write_scalar("num_initial_steps", self.num_initial_steps)
+        opt.write_scalar("min_autocorr_times", self.min_autocorr_times)
+
+        return opt
 
     def write_fit(self, output):
         fit = super().write_fit(output)
@@ -144,7 +158,7 @@ class EmceeSampler(Optimizer):
         res = super().chisq_trans(fit_params, data, datastd)
 
         if not np.isfinite(res):
-            return np.inf
+            return 1e20
 
         return res
 
@@ -179,7 +193,7 @@ class EmceeSampler(Optimizer):
             # if k.endswith('_derived'):
             #     continue
             idx = names.index(k)
-            opt_map[idx] = v["map"]
+            opt_map[idx] = v["emcee_map"]
             opt_values[idx] = v["value"]
 
         yield 0, opt_map, opt_values, [
