@@ -227,6 +227,7 @@ class ReactiveAffineInvariantSampler(object):
         num_chains=4,
         num_walkers=None,
         max_ncalls=1000000,
+        growth_factor=10,
         max_improvement_loops=4,
         num_initial_steps=100,
         min_autocorr_times=0,
@@ -245,7 +246,7 @@ class ReactiveAffineInvariantSampler(object):
         5. For each parameter, compute geweke convergence diagnostic (Convergence requires |z| < geweke_max)
         6. For each ensemble, compute gelman-rubin rank convergence diagnostic (Convergence requires rhat<rhat_max)
         7. If converged, stop and return results.
-        8. Increase *num_steps* by 10, and repeat from (3) up to *max_improvement_loops* times.
+        8. Increase *num_steps* by *growth_factor*, and repeat from (3) up to *max_improvement_loops* times.
 
 
         Parameters
@@ -260,6 +261,8 @@ class ReactiveAffineInvariantSampler(object):
             Ensemble size. If None, max(100, 4 * dim) is used
         max_ncalls: int
             Maximum number of likelihood function evaluations
+        growth_factor: int
+            Factor by which to increase the number of steps in each iteration
         num_initial_steps: int
             Number of sampler steps to take in first iteration
         max_improvement_loops: int
@@ -451,8 +454,8 @@ class ReactiveAffineInvariantSampler(object):
                 )
             # self.logger.error("error at iteration %d" % (it+1))
             last_num_steps = num_steps
-            num_steps = int(last_num_steps * 10)
-            next_ncalls = ncall_here * 10
+            num_steps = int(last_num_steps * growth_factor)
+            next_ncalls = ncall_here * growth_factor
 
             if next_ncalls > max_ncalls:
                 if self.log:

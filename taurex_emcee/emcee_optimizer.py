@@ -17,6 +17,7 @@ class EmceeSampler(Optimizer):
         num_chains=4,
         num_walkers=None,
         max_ncalls=1000000,
+        growth_factor=10,
         max_improvement_loops=4,
         num_initial_steps=100,
         min_autocorr_times=0,
@@ -28,6 +29,7 @@ class EmceeSampler(Optimizer):
         self.num_chains = int(num_chains)
         self.num_walkers = int(num_walkers) if num_walkers else None
         self.max_ncalls = int(max_ncalls)
+        self.growth_factor = int(growth_factor)
         self.max_improvement_loops = int(max_improvement_loops)
         self.num_initial_steps = int(num_initial_steps)
         self.min_autocorr_times = min_autocorr_times
@@ -71,6 +73,7 @@ class EmceeSampler(Optimizer):
             num_chains=self.num_chains,
             num_walkers=self.num_walkers,
             max_ncalls=self.max_ncalls,
+            growth_factor=self.growth_factor,
             max_improvement_loops=self.max_improvement_loops,
             num_initial_steps=self.num_initial_steps,
             min_autocorr_times=self.min_autocorr_times,
@@ -108,7 +111,9 @@ class EmceeSampler(Optimizer):
 
         emcee_output["solution"] = {}
         emcee_output["solution"]["samples"] = result["samples"]
-        emcee_output["solution"]["weights"] = np.ones(len(result["samples"]))
+        emcee_output["solution"]["weights"] = np.ones(len(result["samples"])) / len(
+            result["samples"]
+        )
         emcee_output["solution"]["fitparams"] = {}
 
         posterior = result["posterior"]
