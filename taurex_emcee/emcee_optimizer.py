@@ -4,7 +4,7 @@ import numpy as np
 from scipy import stats
 from taurex.optimizer import Optimizer
 from taurex.util.util import recursively_save_dict_contents_to_output
-from .mcmc import ReactiveAffineInvariantSampler
+from .autoemcee import ReactiveAffineInvariantSampler
 
 
 class EmceeSampler(Optimizer):
