@@ -65,7 +65,6 @@ class EmceeSampler(Optimizer):
             self.fit_names,
             loglike=emcee_loglike,
             transform=emcee_transform,
-            sampler="goodman-weare",
         )
 
         sampler.run(
