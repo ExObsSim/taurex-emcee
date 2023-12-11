@@ -19,7 +19,7 @@ entry_points = {"taurex.plugins": "emcee = taurex_emcee"}
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-version = "0.2.0-alpha"
+version = "0.3.0-alpha"
 
 setup(
     name="taurex_emcee",
@@ -38,7 +38,7 @@ setup(
         "sampling",
         "ensemble sampling",
         "taurex",
-        "chemistry" "taurex",
+        "chemistry",
         "plugin",
         "taurex3",
         "atmosphere",
