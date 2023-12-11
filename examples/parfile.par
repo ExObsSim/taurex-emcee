@@ -7,13 +7,13 @@ chemistry_type = free
 fill_gases = H2, He
 ratio = 0.172
 
-    [[H2O]]
+    [[CO2]]
     gas_type = constant
-    mix_ratio = 1e-4
+    mix_ratio = 1e-4   
 
     [[CH4]]
     gas_type = constant
-    mix_ratio = 1e-4    
+    mix_ratio = 1e-4   
 
 [Temperature]
 profile_type = isothermal
@@ -41,11 +41,11 @@ model_type = transmission
 
 [Binning]
 bin_type = manual
-wavelength_grid = 0.3, 5, 30
+wavelength_grid = 0.3, 5, 50
 
 [Instrument]
 instrument = snr
-SNR = 20
+SNR = 50
 
 [Observation]
 taurex_spectrum = self
@@ -54,11 +54,15 @@ taurex_spectrum = self
 
 [Optimizer]
 optimizer = emcee
-nwalkers = 16
-backend = ../output/run1/emcee.h5
-run_name = full
-resume = False
-progress = False
+num_global_samples=100
+num_chains=1
+num_walkers=8
+max_ncalls=1000000
+growth_factor=2
+max_improvement_loops=10
+num_initial_steps=100
+min_autocorr_times=0
+progress=True
 
 [Fitting]
 planet_radius:fit = True
@@ -67,9 +71,9 @@ planet_radius:factor = 0.9, 1.1
 T:fit = True
 T:bounds = 900, 1100
 
-H2O:fit = True
-H2O:mode = log
-H2O:bounds = 1e-12, 1e-1
+CO2:fit = True
+CO2:mode = log
+CO2:bounds = 1e-12, 1e-1
 
 CH4:fit = True
 CH4:mode = log
