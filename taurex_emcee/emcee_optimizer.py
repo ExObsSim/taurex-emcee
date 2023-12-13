@@ -1,7 +1,6 @@
 import time
 
 import numpy as np
-from scipy import stats
 from taurex.optimizer import Optimizer
 from taurex.util.util import recursively_save_dict_contents_to_output
 from .autoemcee import ReactiveAffineInvariantSampler
@@ -124,7 +123,6 @@ class EmceeSampler(Optimizer):
             param["sigma_m"] = param["value"] - posterior["errlo"][idx]
             param["sigma_p"] = posterior["errup"][idx] - param["value"]
             param["trace"] = result["samples"][:, idx]
-            param["emcee_map"] = stats.mode(result["samples"][:, idx])[0]
 
             emcee_output["solution"]["fitparams"][param_name] = param
 
@@ -197,7 +195,7 @@ class EmceeSampler(Optimizer):
             # if k.endswith('_derived'):
             #     continue
             idx = names.index(k)
-            opt_map[idx] = v["emcee_map"]
+            # opt_map[idx] = v["map"]
             opt_values[idx] = v["value"]
 
         yield 0, opt_map, opt_values, [

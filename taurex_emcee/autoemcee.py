@@ -577,9 +577,9 @@ class ReactiveAffineInvariantSampler(object):
             posterior=dict(
                 mean=eqsamples.mean(axis=0).tolist(),
                 stdev=eqsamples.std(axis=0).tolist(),
-                median=np.percentile(eqsamples, 50, axis=0).tolist(),
-                errlo=np.percentile(eqsamples, 15.8655, axis=0).tolist(),
-                errup=np.percentile(eqsamples, 84.1345, axis=0).tolist(),
+                median=np.percentile(eqsamples, 50.0, axis=0).tolist(),
+                errlo=np.percentile(eqsamples, 16.0, axis=0).tolist(),
+                errup=np.percentile(eqsamples, 84.0, axis=0).tolist(),
             ),
             samples=eqsamples,
             ncall=int(self.ncall),
