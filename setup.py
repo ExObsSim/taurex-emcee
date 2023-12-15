@@ -19,7 +19,7 @@ entry_points = {"taurex.plugins": "emcee = taurex_emcee"}
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-version = "0.3.1-alpha"
+version = "0.4.0-alpha"
 
 setup(
     name="taurex_emcee",
