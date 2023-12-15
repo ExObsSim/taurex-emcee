@@ -56,7 +56,7 @@ taurex_spectrum = self
 [Optimizer]
 optimizer = emcee
 num_global_samples=100
-num_chains=1
+num_chains=2
 num_walkers=8
 max_ncalls=1000000
 growth_factor=2
