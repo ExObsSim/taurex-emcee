@@ -1,5 +1,5 @@
 ---
-title: 'taurex-emcee: A TauREx 3.1 plugin for retrievals using the emcee sampler'
+title: 'taurex-emcee: a TauREx 3.1 plugin for the emcee sampler'
 tags:
   - Python
   - astronomy
@@ -41,15 +41,15 @@ bibliography: paper.bib
 
 <!-- A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience. -->
 
-The `taurex-emcee` plugin is a plugin for the TauREx 3.1 retrieval code that allows users to perform retrievals using the emcee sampler.
-
-Optimized sampling methods are a key component of any retrieval code. Nested samplers are generally considered the most robust sampling method for retrieval of exoplanet atmospheric spectra, and are natively implemented in TauREx 3.1. The estimation of the Bayesian `evidence` is the primary product of nested samplers, whereas the estimation of the Bayesian `posterior` is a by-product. Compared to nested samplers, affine-invariant ensemble samplers sample directly from the Bayesian `posterior`, and therefore the interpretation of the results is more straightforward, even for non-expert users. Moreover, in some instances nested samplers may require to define bespoke priors to ensure that the parameter space is thoroughly explored, whereas affine-invariant ensemble samplers asymptotically sample the entire parameter space. The trade-off being that the latter are more computationally expensive, and the computational time scales much faster with dimensionality.
+`taurex-emcee` is a plugin for the TauREx 3.1 atmospheric retrieval framework [@Al-Refaie:2021] that extends the choice of sampling methods available to the user. The plugin implements an interface to the [emcee](https://emcee.readthedocs.io/en/stable/) sampler [@Foreman-Mackey:2013], which is a popular affine-invariant ensemble sampler widely used in the astronomy community. The interface is automated by adopting the [autoemcee](https://github.com/JohannesBuchner/autoemcee) package by Johannes Buchner, which also handles parallelization. Thus, the `taurex-emcee` plugin enables users to launch parallelized retrievals using the emcee sampler with a single line of code. This allows fast retrievals of exoplanet atmospheric spectra, especially when coupled with the GPU-accelerated forward models of the TauREx 3.1 framework [@Al-Refaie:2020].
 
 # Statement of need
 
 <!-- A Statement of need section that clearly illustrates the research purpose of the software and places it in the context of related work. -->
 
-The [emcee](https://emcee.readthedocs.io/en/stable/) sampler is a popular affine-invariant ensemble sampler that is widely used in the astronomy community. However, the emcee sampler is not implemented in the TauREx 3.1 retrieval code, which is a popular open-source code for exoplanet atmospheric retrievals. The `taurex-emcee` plugin implements the emcee sampler in TauREx 3.1, allowing users to perform retrievals using the emcee sampler. The `taurex-emcee` plugin is compatible with the TauREx 3.1 parallelization framework, allowing users to perform parallelized retrievals using the emcee sampler.
+Optimized sampling methods are a key component of any retrieval code. Nested samplers [@Feroz:2008; @Feroz:2009; @Feroz:2013; @Feroz:2019] are generally considered the most robust sampling method for retrieval of exoplanet atmospheric spectra, and are natively implemented in TauREx 3.1 or available as plugins. The estimation of the Bayesian `evidence` is the primary product of nested samplers, whereas the estimation of the Bayesian `posterior` is a by-product. Compared to nested samplers, affine-invariant ensemble samplers sample directly from the Bayesian `posterior`, and therefore the interpretation of the results is more straightforward, even for non-expert users. Moreover, in some instances nested samplers may require to define bespoke priors to ensure that the parameter space is thoroughly explored, whereas affine-invariant ensemble samplers asymptotically sample the entire parameter space. The trade-off being that the latter are more computationally expensive, and the computational time scales much faster with dimensionality.
+
+The [emcee](https://emcee.readthedocs.io/en/stable/) sampler is a popular affine-invariant ensemble sampler that is widely used in the astronomy community. However, TauREx 3.1 does not natively implement the emcee sampler. The `taurex-emcee` plugin implements the emcee sampler in TauREx 3.1, allowing users to perform retrievals using the emcee sampler. The `taurex-emcee` plugin is compatible with the TauREx 3.1 parallelization framework, allowing users to perform parallelized retrievals using the emcee sampler.
 
 # Acknowledgements
 
