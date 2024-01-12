@@ -12,6 +12,8 @@ requires = []
 install_requires = [
     "taurex",
     "emcee",
+    "corner",
+    "arviz",
 ]
 
 entry_points = {"taurex.plugins": "emcee = taurex_emcee"}
