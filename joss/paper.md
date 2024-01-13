@@ -51,6 +51,13 @@ bibliography: paper.bib
 
 Emcee vs MultiNest
 
+Figures can be included like this:
+<!-- ![Caption for _spectrum figure.\label{fig:_spectrum}](_spectrum.pdf){width=80% } -->
+<!-- and referenced from text using \autoref{fig:_spectrum}. -->
+<!-- 
+Figure sizes can be customized by adding an optional second parameter:
+![Caption for _posterior_ figure.\label{fig:_posterior}](_posterior.pdf){ width=80% } -->
+
 <!-- Compared to nested samplers, affine-invariant ensemble samplers sample directly from the Bayesian `posterior`, and therefore the interpretation of the results is more straightforward, even for non-expert users. Moreover, in some instances nested samplers may require to define bespoke priors to ensure that the parameter space is thoroughly explored, whereas affine-invariant ensemble samplers asymptotically sample the entire parameter space. The trade-off being that the latter are more computationally expensive, and the computational time scales much faster with dimensionality. -->
 
 # Statement of need
@@ -59,7 +66,7 @@ Emcee vs MultiNest
 
 Optimized sampling methods are a key component of any retrieval code. Nested samplers [@Feroz:2009; @Feroz:2019] are a powerful and robust sampling method, successfully applied to the retrieval of exoplanet atmospheric spectra [@Changeat:2020; @Barstow:2020; @Bocchieri:2023]. TauREx 3.1 natively implements a suite of nested samplers, including the [MultiNest](https://github.com/JohannesBuchner/MultiNest) sampler, or makes them available as plugins, such as the [UltraNest](https://github.com/JohannesBuchner/UltraNest) sampler. The primary target of nested samplers is the efficient calculation of the Bayesian `evidence`, whilst the inference of the `posterior` is a by-product. This is regarded as a key advantage of nested samplers, as the `evidence` can be readily used for model selection. However, the `evidence` is not always required, and the interpretation of the `posterior` from nested samplers necessitates some care. Additionally, algorithmic assumptions of nested samplers may require to tailor the priors to explore the parameter space thoroughly.
 
-Where the inference of the Bayesian `posterior` is the primary target, a well-established alternative to nested samplers are a family of Markov chain Monte Carlo methods known as affine-invariant ensemble samplers [@Goodman:2010]. The implementation in [emcee](https://emcee.readthedocs.io/en/stable/) [@Foreman-Mackey:2013] is a popular choice in the astronomy community, as it takes care of the heavy lifting of the sampling process, is well documented, and is straightforward to utilize. To date, the `emcee` sampler is not natively implemented in the TauREx 3.1 retrieval framework, nor elsewhere in other retrieval codes, to the knowledge of the authors. To fill this gap, we developed the `taurex-emcee` plugin, which interfaces the `emcee` sampler to TauREx.
+Where the inference of the Bayesian `posterior` is the primary target, a well-established alternative to nested samplers are a family of Markov chain Monte Carlo methods known as affine-invariant ensemble samplers [@Goodman:2010]. The implementation in [emcee](https://emcee.readthedocs.io/en/stable/) [@Foreman-Mackey:2013] is a popular choice in the astronomy community, as it takes care of the heavy lifting of the sampling process, is well documented, and is straightforward to utilize. To date, the `emcee` sampler is not natively implemented in the TauREx 3.1 retrieval framework, nor elsewhere in other retrieval codes, to the knowledge of the authors. To fill this gap, we developed the `taurex-emcee` plugin, which interfaces the `emcee` sampler to TauREx. Key advantages of `taurex-emcee` are that it affords a more straightforward interpretation of the `posterior` and is more robust to the choice of priors. However, the current implementation is not intended to explore multimodal `posteriors`, for which nested samplers will inevitably be more efficient. Moreover, we caveat that it may require substantial computational time to sample high-dimensional parameter spaces with `emcee`, which can be mitigated by coupling `taurex-emcee` with TauREx's GPU-accelerated forward models [@Al-Refaie:2020].
 
 # Acknowledgements
 
