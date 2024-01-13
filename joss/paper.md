@@ -43,7 +43,7 @@ bibliography: paper.bib
 
 `taurex-emcee` is a plugin for the TauREx 3.1 atmospheric retrieval framework [@Al-Refaie:2021] that extends the choice of sampling methods available to the user. The plugin provides an interface to the [emcee](https://emcee.readthedocs.io/en/stable/) sampler [@Foreman-Mackey:2013], a popular affine-invariant ensemble sampler widely used in the astronomy community. Running the sampler to convergence is automated through the [autoemcee](https://github.com/JohannesBuchner/autoemcee) package, which also supports parallelization with MPI. Thus, the `taurex-emcee` plugin allows users to easily launch parallelized retrievals of atmospheric spectra with `emcee`. This enables reliable, efficient, and fast retrievals, especially when coupled with TauREx's GPU-accelerated forward models [@Al-Refaie:2020].
 
-`taurex-emcee` is released under the BSD 3-Clause license and is available on [GitHub](insert-link-here). The plugin can be installed from the source code or from [PyPI](insert-url-here), so it can be installed as `pip install taurex-emcee`. The documentation is available on [readthedocs](insert-link-here), including a quick-start guide, a tutorial, a description of the software functionalities, and guidelines for developers. The documentation is continuously updated and is versioned to match the software releases.
+`taurex-emcee` is released under the BSD 3-Clause license and is available on [GitHub](insert-url-here). The plugin can be installed from the source code or from [PyPI](insert-url-here), so it can be installed as `pip install taurex-emcee`. The documentation is available on [readthedocs](insert-url-here), including a quick-start guide, a tutorial, a description of the software functionalities, and guidelines for developers. The documentation is continuously updated and is versioned to match the software releases.
 
 # Benchmark
 
@@ -52,11 +52,17 @@ bibliography: paper.bib
 Emcee vs MultiNest
 
 Figures can be included like this:
-<!-- ![Caption for _spectrum figure.\label{fig:_spectrum}](_spectrum.pdf){width=80% } -->
-<!-- and referenced from text using \autoref{fig:_spectrum}. -->
-<!-- 
+
+![Caption for spectrum figure. \label{fig:spectrum}](spectrum.pdf){height=100%}
+
+and referenced from text using \autoref{fig:spectrum}.
+
 Figure sizes can be customized by adding an optional second parameter:
-![Caption for _posterior_ figure.\label{fig:_posterior}](_posterior.pdf){ width=80% } -->
+
+![Caption for posteriors figure.\label{fig:posteriors}](posteriors.png){height=100%}
+
+and referenced from text using \autoref{fig:posteriors}.
+
 
 <!-- Compared to nested samplers, affine-invariant ensemble samplers sample directly from the Bayesian `posterior`, and therefore the interpretation of the results is more straightforward, even for non-expert users. Moreover, in some instances nested samplers may require to define bespoke priors to ensure that the parameter space is thoroughly explored, whereas affine-invariant ensemble samplers asymptotically sample the entire parameter space. The trade-off being that the latter are more computationally expensive, and the computational time scales much faster with dimensionality. -->
 
