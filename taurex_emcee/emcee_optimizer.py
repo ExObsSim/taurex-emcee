@@ -57,6 +57,9 @@ class EmceeSampler(Optimizer):
         ndim = len(self.fitting_parameters)
         self.info("Number of dimensions {}".format(ndim))
         self.info("Fitting parameters {}".format(self.fitting_parameters))
+        
+        if self.num_walkers is None:
+            self.num_walkers = max(100, 4 * ndim)
 
         t0 = time.time()
 

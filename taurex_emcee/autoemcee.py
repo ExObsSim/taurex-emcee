@@ -310,9 +310,6 @@ class ReactiveAffineInvariantSampler(object):
 
         """
 
-        if num_walkers is None:
-            num_walkers = max(100, 4 * self.x_dim)
-
         num_steps = num_initial_steps
         if self.use_mpi:
             num_chains = self.mpi_size
@@ -583,7 +580,7 @@ class ReactiveAffineInvariantSampler(object):
             ),
             samples=eqsamples,
             ncall=int(self.ncall),
-            converged=int(converged),
+            converged=converged,
         )
         return self.results
 
