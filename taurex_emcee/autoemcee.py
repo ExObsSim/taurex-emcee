@@ -174,7 +174,7 @@ class ReactiveAffineInvariantSampler(object):
 
         Tests with `num_test_samples` whether they work and give the correct output.
 
-        if make_safe is set, make functions safer by accepting misformed
+        if make_safe is set, make functions safer by accepting misformed emcee_logprob
         return shapes and non-finite likelihood values.
         """
         # do some checks on the likelihood function
@@ -580,7 +580,7 @@ class ReactiveAffineInvariantSampler(object):
             ),
             samples=eqsamples,
             ncall=int(self.ncall),
-            converged=converged,
+            converged=int(converged),
         )
         return self.results
 
