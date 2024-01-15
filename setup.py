@@ -21,13 +21,13 @@ entry_points = {"taurex.plugins": "emcee = taurex_emcee"}
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-version = "0.4.0-alpha.2"
+version = "0.4.0-alpha.3"
 
 setup(
     name="taurex_emcee",
     author="Andrea Bocchieri",
     author_email="andrea.bocchieri@uniroma1.it",
-    license="BSD",
+    license="BSD 3-Clause",
     description="emcee plugin for TauREx-3 ",
     packages=packages,
     long_description=long_description,
