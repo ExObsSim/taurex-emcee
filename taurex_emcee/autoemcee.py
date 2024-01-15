@@ -288,7 +288,7 @@ class ReactiveAffineInvariantSampler(object):
             Number of independent ensembles to run. If running with MPI,
             this is set to the number of MPI processes.
         num_walkers: int
-            Ensemble size. If None, max(100, 4 * dim) is used
+            Ensemble size.
         max_ncalls: int
             Maximum number of likelihood function evaluations
         growth_factor: int

@@ -26,7 +26,7 @@ class EmceeSampler(Optimizer):
 
         self.num_global_samples = int(num_global_samples)
         self.num_chains = int(num_chains)
-        self.num_walkers = int(num_walkers) if num_walkers else None
+        self.num_walkers = int(num_walkers) if num_walkers else None  # If None, max(100, 4 * dim) is used
         self.max_ncalls = int(max_ncalls)
         self.growth_factor = int(growth_factor)
         self.max_improvement_loops = int(max_improvement_loops)
