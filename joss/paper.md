@@ -106,8 +106,6 @@ Next, we compare the results of the retrievals. For brevity, we only discuss the
 
 ![Posterior distributions of the retrieved parameters for the HD 209458b simulated observations with `MultiNest` (blue) and `emcee` (orange). The true values are shown as the vertical black lines. The vertical dashed lines in the histograms on the diagonal show the median and 16$\%$ and 84$\%$ quantiles. \label{fig:posteriors}](posteriors.pdf){height=100%}
 
-The similarity of the results from the two samplers is reassuring, and the retrieved parameters are consistent with the true values within 1$\sigma$. It is worth noting that the median values are, to an extent, biased for both samplers, in essentially the same manner. This result is expected, as the retrieval traces the degeneracies between the parameters and the fitted molecules have strong correlations with each other, as seen in \autoref{fig:posteriors}. In addition, for some parameters, namely CO and NH$_3$, due to the combination of opacities and abundances, the retrievals only recover an upper limit. In these cases, mean, median, and mode are not defined, and the reported values depend on the choice of the prior.
-
 | Parameter              | True value | `Emcee`                   | `MultiNest`               |
 |:----------------------:|:----------:|:-------------------------:|:-------------------------:|
 | R$_P$                  | 1.35       |  1.34$^{+0.02}_{-0.02}$   |  1.34$^{+0.02}_{-0.02}$   |
@@ -119,6 +117,8 @@ The similarity of the results from the two samplers is reassuring, and the retri
 | log(NH$_3$)            | -8         |  -8.5$^{+2.3}_{-2.4}$     |  -8.7$^{+2.4}_{-2.2}$     |
 | log(P$_\text{clouds}$) | 3          |  $2.27^{+0.91}_{-0.72}$   |  2.19$^{+0.94}_{-0.88}$   |
 : Retrieved parameters and their uncertainties. True values are reported for comparison. \label{tab:fit-params}
+
+The similarity of the results from the two samplers is reassuring, and the retrieved parameters are consistent with the true values within 1$\sigma$. It is worth noting that the median values are, to an extent, biased for both samplers, in essentially the same manner. This result is expected, as the retrieval traces the degeneracies between the parameters and the fitted molecules have strong correlations with each other, as seen in \autoref{fig:posteriors}. In addition, for some parameters, namely CO and NH$_3$, due to the combination of opacities and abundances, the retrievals only recover an upper limit. In these cases, mean, median, and mode are not defined, and the reported values depend on the choice of the prior.
 
 In summary, while the `emcee` sampler is generally slower than `MultiNest`, it is a robust and reliable alternative to nested samplers, as shown by the consistency of the results from the two samplers in our benchmark.
 
