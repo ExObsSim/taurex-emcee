@@ -77,12 +77,12 @@ In our retrieval benchmarks, we attempt to constrain the abundances of the trace
 |:-----------------:|:-----:|:---------------------:|:-------:|
 | R$_P$             | R$_J$ |       \pm10$\%$       |  linear |
 | T                 |   K   |       100; 4000       |  linear |
-| P$_\text{clouds}$ |   Pa  |        1; 10$^{6}$    |   log   |
 | H$_2$O            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
 | CH$_4$            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
 | CO                |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
 | CO$_2$            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
 | NH$_3$            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
+| P$_\text{clouds}$ |   Pa  |        1; 10$^{6}$    |   log   |
 : Parameters and priors used in the retrievals. \label{tab:priors}
 
 We perform five retrievals each with `MultiNest` and `emcee`, with increasing number of molecules included in the free parameters (the other molecules being fixed to their true values), from only H$_2$O to all five trace gases. With `MultiNest`, we set the evidence tolerance to 0.5 and sample the parameter space through 1500 live points. With `emcee`, we utilize 100 walkers and run two independent chains, each to convergence, where we adopt the default convergence criteria of the [autoemcee](https://github.com/JohannesBuchner/autoemcee) package, i.e. the Geweke convergence diagnostic [@Geweke:1991] is z-score < 2.0 and the Gelman-Rubin rank diagnostic [@Gelman:1992] is $\hat{r}$ < 1.01. When iterating the chains, we increase the number of steps by multiplying the number of steps of the previous iteration by a `growth` factor of 2, a parameter that we have enabled as the default value of 10 was deemed too conservative for our tests. As a first comparison, we report in \autoref{tab:times} the computational time of the retrievals with the two samplers.
@@ -106,18 +106,17 @@ Next, we compare the results of the retrievals. For brevity, we only discuss the
 
 ![Caption for posteriors figure.\label{fig:posteriors}](posteriors.pdf){height=100%}
 
-| Parameters             | `Emcee`          | `MultiNest`          |
-|:----------------------:|:----------------:|:----------------:|
-| R$_P$                  |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
-| T                      |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
-| log(P$_\text{clouds}$) |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
-| log(H$_2$O)            |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
-| log(CH$_4$)            |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
-| log(CO)                |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
-| log(CO$_2$)            |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
-| log(NH$_3$)            |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
-| $\mu$ (derived)        |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
-: Retrieved parameters and their 16 and 84 percentiles. \label{tab:fit-params}
+| Parameter              | True value | `Emcee`                   | `MultiNest`               |
+|:----------------------:|:----------:|:-------------------------:|:-------------------------:|
+| R$_P$                  | 1.35       |  1.34$^{+0.02}_{-0.02}$   |  1.34$^{+0.02}_{-0.02}$   |
+| T                      | 1613       |  1635.8$^{+98.9}_{-93.4}$ |  1631.4$^{+97.5}_{-87.0}$ |
+| log(H$_2$O)            | -4         |  -3.31$^{+0.71}_{-0.85}$  |  -3.21$^{+0.87}_{-0.91}$  |
+| log(CH$_4$)            | -5         |  -4.29$^{+0.72}_{-0.87}$  |  -4.20$^{+0.89}_{-0.92}$  |
+| log(CO)                | -6         |  -7.4$^{+2.7}_{-3.1}$     |  -7.7$^{+2.8}_{-2.9}$     |
+| log(CO$_2$)            | -7         |  -6.40$^{+0.80}_{-0.90}$  |  -6.31$^{+0.93}_{-0.93}$  |
+| log(NH$_3$)            | -8         |  -8.5$^{+2.3}_{-2.4}$     |  -8.7$^{+2.4}_{-2.2}$     |
+| log(P$_\text{clouds}$) | 3          |  $2.27^{+0.91}_{-0.72}$   |  2.19$^{+0.94}_{-0.88}$   |
+: Retrieved parameters and their uncertainties. True values are reported for comparison. \label{tab:fit-params}
 
 <!-- Compared to nested samplers, affine-invariant ensemble samplers sample directly from the Bayesian `posterior`, and therefore the interpretation of the results is more straightforward, even for non-expert users. Moreover, in some instances nested samplers may require to define bespoke priors to ensure that the parameter space is thoroughly explored, whereas affine-invariant ensemble samplers asymptotically sample the entire parameter space. The trade-off being that the latter are more computationally expensive, and the computational time scales much faster with dimensionality. -->
 
