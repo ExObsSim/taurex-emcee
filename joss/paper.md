@@ -82,6 +82,8 @@ In our retrieval benchmarks, we attempt to constrain the abundances of the trace
 |  H$_2$O, CH$_4$, CO, CO$_2$, NH$_3$ |   30,151   |     17,097     |
 : Runtime of the retrievals with `emcee` and `MultiNest` samplers. \label{tab:times}
 
+`MultiNest` is faster than `emcee` for all the retrievals bar the one with H$_2$O and CH$_4$, where the computational time is around 15 minutes longer. Additionally, runtimes with `MultiNest` scale slower with the increase in dimensionality of the parameter space. Finally, the first retrieval with `emcee` is slower than the second as the chains may require more iterations to converge based on the realization of the random walkers.
+
 Figures can be included like this:
 
 ![Caption for spectrum figure. \label{fig:spectrum}](spectrum.pdf){height=100%}
