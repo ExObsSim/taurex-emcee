@@ -49,7 +49,38 @@ bibliography: paper.bib
 
 <!-- A summary of the results of the benchmarking tests. -->
 
-Emcee vs MultiNest
+We benchmarked the `taurex-emcee` plugin against the `MultiNest` sampler [@Feroz:2009; @Feroz:2019], natively implemented in TauREx 3, on a synthetic transmission spectrum of the hot Jupiter HD 209458b. The aim being first to assess the computational time of the two samplers on a controlled case, second to assess the consistency of the results from the retrievals. The synthetic spectrum and the retrievals were performed on a single node of the Sapienza University of Rome ``Melodie`` server, equipped with one NVIDIA A40 GPU. The high-resolution input spectrum was generated assuming stellar and planetary parameters of HD 209458b from @Edwards:2019, reported in \autoref{tab:hd-params}, and a gaseous atmosphere with hydrogen and helium at a ratio H$_2$/He = 0.172 and an isothermal temperature profile.
+
+| R$_p$ [R$_J$] | M$_p$ [M$_J$] | T$_p$ [K] | P [d] | R$_s$ [R$_\odot$] | Mag K | T$_s$ [K] | M$_s$ [M$_\odot$] |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1.35 | 0.71 | 1613 | 3.52 | 1.18 | 6.31 | 6,086 | 1.18 |
+: Summary of the selected target's properties \label{tab:hd-params}
+
+The atmosphere is simulated with five molecular species as trace gases: H$_2$O (100 ppm), CH$_4$ (10 ppm), CO (1 ppm), CO$_2$ (0.1 ppm), and NH$_3$ (0.01 ppm). Molecular abundances are assumed constant with altitude. Cross sections at a resolution of 15,000 are used for all species, as given in \autoref{tab:opacities}. Collision-induced absorption (CIA) with H$_2$–H$_2$ and H$_2$–He and Rayleigh scattering are included in the calculation. Finally, 100 pressure layers are used to sample the atmosphere, with a minimum pressure of 1 Pa and a maximum pressure of 10$^6$ Pa.
+
+| Opacity | Reference(s) |
+|:---:|:---:|
+| H$_2$-H$_2$ | @Abel:2011, @Fletcher:2018 |
+| H$_2$-He | @Abel:2012 |
+| H$_2$O | @Polyansky:2018 |
+| NH$_3$ | @Coles:2019 |
+| CO | @Li:2015 |
+| CO$_2$ | @Rothman:2010 |
+| CH$_4$ | @Yurchenko:2017 |
+: Cross sections and CIA used in the simulations \label{tab:opacities}
+
+The spectrum...
+
+The free parameters...
+
+| # Fit params | Emcee [s] | MultiNest [s] |
+|:------------:|:---------:|:-------------:|
+|       4      |   16,465   |      5,423     |
+|       5      |    6,550   |      7,505     |
+|       6      |   15,247   |     10,093     |
+|       7      |   14,930   |     12,847     |
+|       8      |   30,151   |     17,097     |
+: Runtime of the retrievals with `emcee` and `MultiNest` samplers. \label{tab:times}
 
 Figures can be included like this:
 
@@ -59,7 +90,7 @@ and referenced from text using \autoref{fig:spectrum}.
 
 Figure sizes can be customized by adding an optional second parameter:
 
-![Caption for posteriors figure.\label{fig:posteriors}](posteriors.png){height=100%}
+![Caption for posteriors figure.\label{fig:posteriors}](posteriors.pdf){height=100%}
 
 and referenced from text using \autoref{fig:posteriors}.
 
