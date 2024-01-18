@@ -49,14 +49,14 @@ bibliography: paper.bib
 
 <!-- A summary of the results of the benchmarking tests. -->
 
-We benchmarked the `taurex-emcee` plugin against the `MultiNest` sampler [@Feroz:2009; @Feroz:2019], natively implemented in TauREx 3, on a synthetic transmission spectrum of the hot Jupiter HD 209458b. The aim being first to assess the computational time of the two samplers on a controlled case, second to assess the consistency of the results from the retrievals. The synthetic spectrum and the retrievals were performed on a single node of the Sapienza University of Rome ``Melodie`` server, equipped with one NVIDIA A40 GPU. The high-resolution input spectrum was generated assuming stellar and planetary parameters of HD 209458b from @Edwards:2019, reported in \autoref{tab:hd-params}, and a gaseous atmosphere with hydrogen and helium at a ratio H$_2$/He = 0.172 and an isothermal temperature profile.
+We benchmarked the `taurex-emcee` plugin against the `MultiNest` sampler [@Feroz:2009; @Feroz:2019], natively implemented in TauREx 3, on a synthetic transmission spectrum of the hot Jupiter HD 209458b. The aim being first to assess the computational time of the two samplers on a controlled case, second to assess the consistency of the results from the retrievals. The synthetic spectrum and the retrievals were performed on a single node of the Sapienza University of Rome ``Melodie`` server, equipped with one NVIDIA A40 GPU. The high-resolution forward spectrum was generated assuming stellar and planetary parameters of HD 209458b from @Edwards:2019, reported in \autoref{tab:hd-params}, and a gaseous atmosphere with hydrogen and helium at a ratio H$_2$/He = 0.172 and an isothermal temperature profile.
 
 | R$_p$ [R$_J$] | M$_p$ [M$_J$] | T$_p$ [K] | P [d] | R$_s$ [R$_\odot$] | Mag K | T$_s$ [K] | M$_s$ [M$_\odot$] |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | 1.35 | 0.71 | 1613 | 3.52 | 1.18 | 6.31 | 6,086 | 1.18 |
 : Summary of the selected target's properties \label{tab:hd-params}
 
-The atmosphere is simulated with five molecular species as trace gases: H$_2$O (100 ppm), CH$_4$ (10 ppm), CO (1 ppm), CO$_2$ (0.1 ppm), and NH$_3$ (0.01 ppm). Molecular abundances are assumed constant with altitude. Cross sections at a resolution of 15,000 are used for all species, as given in \autoref{tab:opacities}. Collision-induced absorption (CIA) with H$_2$–H$_2$ and H$_2$–He and Rayleigh scattering are included in the calculation. Finally, 100 pressure layers are used to sample the atmosphere, with a minimum pressure of 1 Pa and a maximum pressure of 10$^6$ Pa.
+The atmosphere is simulated with five molecular species as trace gases: H$_2$O (100 ppm), CH$_4$ (10 ppm), CO (1 ppm), CO$_2$ (0.1 ppm), and NH$_3$ (0.01 ppm). Molecular abundances are assumed constant with altitude. Cross sections at a resolution of 15,000 are used for all species, as given in \autoref{tab:opacities}. Collision-induced absorption (CIA) with H$_2$–H$_2$ and H$_2$–He and Rayleigh scattering are included in the calculation. We also include grey opaque clouds with a cloud-top pressure of 1000 Pa. Finally, 100 pressure layers are used to sample the atmosphere, from 1 Pa to 10$^6$ Pa, uniformly in log-space.
 
 | Opacity | Reference(s) |
 |:---:|:---:|
@@ -69,17 +69,21 @@ The atmosphere is simulated with five molecular species as trace gases: H$_2$O (
 | CH$_4$ | @Yurchenko:2017 |
 : Cross sections and CIA used in the simulations \label{tab:opacities}
 
-The spectrum...
+To simulate the observation of the transmission spectrum, we assume an observation by the `Ariel` space mission [@Tinetti:2018;@Tinetti:2021] in Tier 2 mode [@Edwards:2019]. We utilize radiometric estimates of the total noise on one observation of HD 209458b obtained with `ArielRad` [@Mugnai:2020], the `Ariel` radiometric simulator now available at the online [exodb.space](https://exodb.space/) website. `ArielRad` is based on the generic point source radiometric model `ExoRad2` [@Mugnai:2023], adapted with the `Ariel` payload configuration. The software versions used are: `ExoRad2` v2.1.113, `ArielRad-payloads` v0.0.17, and `ArielRad` v2.4.26.
 
-The free parameters...
+In our retrieval benchmarks, we attempt to constrain the abundances of the trace gases, alongside the temperature profile, the planetary radius, and the cloud-top pressure. We perform five retrievals each with `MultiNest` and `emcee`, with increasing number of molecules included in the free parameters (the other molecules being fixed to their true values), from only H$_2$O to all five trace gases. 
 
-| # Fit params | Emcee [s] | MultiNest [s] |
-|:------------:|:---------:|:-------------:|
-|       4      |   16,465   |      5,423     |
-|       5      |    6,550   |      7,505     |
-|       6      |   15,247   |     10,093     |
-|       7      |   14,930   |     12,847     |
-|       8      |   30,151   |     17,097     |
+MultiNest config, emcee config...
+
+As a first comparison, we report in \autoref{tab:times} the computational time of the retrievals with the two samplers.
+
+|  Fitted molecules                   |  Emcee [s] |  MultiNest [s] |
+|:-----------------------------------:|:----------:|:--------------:|
+|  H$_2$O                             |   16,465   |      5,423     |
+|  H$_2$O, CH$_4$                     |    6,550   |      7,505     |
+|  H$_2$O, CH$_4$, CO                 |   15,247   |     10,093     |
+|  H$_2$O, CH$_4$, CO, CO$_2$         |   14,930   |     12,847     |
+|  H$_2$O, CH$_4$, CO, CO$_2$, NH$_3$ |   30,151   |     17,097     |
 : Runtime of the retrievals with `emcee` and `MultiNest` samplers. \label{tab:times}
 
 Figures can be included like this:
