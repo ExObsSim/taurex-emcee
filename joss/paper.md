@@ -71,18 +71,18 @@ The stellar spectrum is simulated with the [Phoenix stellar models](https://phoe
 
 To simulate the observation of the transmission spectrum, we assume an observation by the `Ariel` space mission [@Tinetti:2018;@Tinetti:2021] in Tier 2 mode [@Edwards:2019]. We utilize radiometric estimates of the total noise on one observation of HD 209458b obtained with `ArielRad` [@Mugnai:2020], the `Ariel` radiometric simulator now available at the online [exodb.space](https://exodb.space/) website. `ArielRad` is based on the generic point source radiometric model `ExoRad2` [@Mugnai:2023], adapted with the `Ariel` payload configuration. The software versions used are: `ExoRad2` v2.1.113, `ArielRad-payloads` v0.0.17, and `ArielRad` v2.4.26.
 
-In our retrieval benchmarks, we attempt to constrain the abundances of the trace gases, alongside the temperature profile, the planetary radius, and the cloud-top pressure. \autoref{tab:priors} reports the parameters and priors used in the retrievals.
+In our retrieval benchmarks, we attempt to constrain the abundances of the trace gases, alongside the temperature profile, the planetary radius, and the cloud-top pressure. \autoref{tab:priors} lists each parameter, its units, and the priors (with corresponding scale) used in the retrievals.
 
-| Parameters   | Units |        Priors         |  Scale  |
-|:------------:|:-----:|:---------------------:|:-------:|
-| R$_P$        | R$_J$ |       \pm10$\%$       |  linear |
-| T            |   K   |       300; 2000       |  linear |
-| P$_{cl.}$    |   Pa  |        1; 10$^{6}$    |   log   |
-| H$_2$O       |  VMR  | 10$^{-12}$; 10$^{-2}$ |   log   |
-| CH$_4$       |  VMR  | 10$^{-12}$; 10$^{-2}$ |   log   |
-| CO           |  VMR  | 10$^{-12}$; 10$^{-2}$ |   log   |
-| CO$_2$       |  VMR  | 10$^{-12}$; 10$^{-2}$ |   log   |
-| NH$_3$       |  VMR  | 10$^{-12}$; 10$^{-2}$ |   log   |
+| Parameter         | Unit  |        Prior          |  Scale  |
+|:-----------------:|:-----:|:---------------------:|:-------:|
+| R$_P$             | R$_J$ |       \pm10$\%$       |  linear |
+| T                 |   K   |       100; 4000       |  linear |
+| P$_\text{clouds}$ |   Pa  |        1; 10$^{6}$    |   log   |
+| H$_2$O            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
+| CH$_4$            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
+| CO                |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
+| CO$_2$            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
+| NH$_3$            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
 : Parameters and priors used in the retrievals. \label{tab:priors}
 
 We perform five retrievals each with `MultiNest` and `emcee`, with increasing number of molecules included in the free parameters (the other molecules being fixed to their true values), from only H$_2$O to all five trace gases. With `MultiNest`, we set the evidence tolerance to 0.5 and sample the parameter space through 1500 live points. With `emcee`, we utilize 100 walkers and run two independent chains, each to convergence, where we adopt the default convergence criteria of the [autoemcee](https://github.com/JohannesBuchner/autoemcee) package, i.e. the Geweke convergence diagnostic [@Geweke:1991] is z-score < 2.0 and the Gelman-Rubin rank diagnostic [@Gelman:1992] is $\hat{r}$ < 1.01. When iterating the chains, we increase the number of steps by multiplying the number of steps of the previous iteration by a `growth` factor of 2, a parameter that we have enabled as the default value of 10 was deemed too conservative for our tests. As a first comparison, we report in \autoref{tab:times} the computational time of the retrievals with the two samplers.
@@ -98,11 +98,26 @@ We perform five retrievals each with `MultiNest` and `emcee`, with increasing nu
 
 `MultiNest` is faster than `emcee` for all the retrievals bar the one with H$_2$O and CH$_4$, where the computational time is around 15 minutes longer. Additionally, runtimes with `MultiNest` scale slower with the increase in dimensionality of the parameter space. Finally, the first retrieval with `emcee` is slower than the second as the chains may require more iterations to converge based on the realization of the random walkers.
 
-Next, we compare the results of the retrievals. 
+Next, we compare the results of the retrievals. For brevity, we only discuss the retrieval with the full stack of trace gases included in the free parameters, as the results of the other retrievals are consistent. \autoref{fig:spectrum} shows the retrieved spectrum yielded by the two samplers, alongside the observed spectrum. The retrieved spectrum is shown as the best-fit model and the 1$\sigma$ and 2$\sigma$ confidence intervals. The retrieved spectra are consistent with each other and with the observed spectrum within the experimental uncertainties.
+
+![Best-fit spectra for the HD 209458b retrievals with `MultiNest` (blue) and `emcee` (orange). The synthetic `observed` spectrum is shown as the black error bars. The 1$\sigma$ and 2$\sigma$ confidence intervals are shown as the shaded regions. The error bars of the observed spectrum are generated with `ArielRad` [@Mugnai:2020] and the spectral grid corresponds to the `Ariel` Tier 2 mode [@Edwards:2019]. \label{fig:spectrum}](spectrum.pdf){height=100%}
+
+\autoref{fig:posteriors} shows the `posteriors` of the retrieved parameters, and \autoref{tab:fit-params} reports the median and 16 and 84 percentiles of the `posteriors`.
 
 ![Caption for posteriors figure.\label{fig:posteriors}](posteriors.pdf){height=100%}
 
-![Caption for spectrum figure. \label{fig:spectrum}](spectrum.pdf){height=100%}
+| Parameters             | `Emcee`          | `MultiNest`          |
+|:----------------------:|:----------------:|:----------------:|
+| R$_P$                  |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
+| T                      |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
+| log(P$_\text{clouds}$) |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
+| log(H$_2$O)            |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
+| log(CH$_4$)            |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
+| log(CO)                |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
+| log(CO$_2$)            |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
+| log(NH$_3$)            |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
+| $\mu$ (derived)        |  val$^{+u}_{-d}$ |  val$^{+u}_{-d}$ |
+: Retrieved parameters and their 16 and 84 percentiles. \label{tab:fit-params}
 
 <!-- Compared to nested samplers, affine-invariant ensemble samplers sample directly from the Bayesian `posterior`, and therefore the interpretation of the results is more straightforward, even for non-expert users. Moreover, in some instances nested samplers may require to define bespoke priors to ensure that the parameter space is thoroughly explored, whereas affine-invariant ensemble samplers asymptotically sample the entire parameter space. The trade-off being that the latter are more computationally expensive, and the computational time scales much faster with dimensionality. -->
 
