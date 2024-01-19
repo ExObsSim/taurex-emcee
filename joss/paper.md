@@ -104,7 +104,7 @@ Next, we compare the results of the retrievals. For brevity, we only discuss the
 
 \autoref{fig:posteriors} shows the `posteriors` of the retrieved parameters, and \autoref{tab:fit-params} reports the median and 16$\%$ and 84$\%$ quantiles of the marginalized `posteriors` relative to the median.
 
-![Posterior distributions of the retrieved parameters for the HD 209458b simulated observations with `MultiNest` (blue) and `emcee` (orange). The true values are shown as the vertical black lines. The vertical dashed lines in the histograms on the diagonal show the median and 16$\%$ and 84$\%$ quantiles. \label{fig:posteriors}](posteriors.pdf){height=100%}
+![Posterior distributions of the retrieved parameters for the HD 209458b simulated observations with `MultiNest` (blue) and `emcee` (orange). The true values are shown as the black lines. The vertical dashed lines in the histograms on the diagonal show the median and 16$\%$ and 84$\%$ quantiles. \label{fig:posteriors}](posteriors.pdf){height=100%}
 
 | Parameter              | True value | `Emcee`                   | `MultiNest`               |
 |:----------------------:|:----------:|:-------------------------:|:-------------------------:|
