@@ -51,38 +51,38 @@ bibliography: paper.bib
 
 We benchmarked the `taurex-emcee` plugin against the `MultiNest` sampler [@Feroz:2009; @Feroz:2019], natively implemented in TauREx&thinsp;3, on a synthetic transmission spectrum of a HD-209458&thinsp;b-like hot Jupiter. The aim being first to assess the computational time of the two samplers on a controlled case, second to assess the consistency of the results from the retrievals. The synthetic spectrum and the retrievals were performed on a single node of the Sapienza University of Rome ``Melodie`` server, equipped with one NVIDIA A40 GPU, and using the TauREx&thinsp;3.1 GPU-accelerated forward model. The software versions used are: `TauREx` v3.1.4, `taurex-cuda` v1.0.1, `MultiNest` v3.10, and `emcee` v3.1.4. The high-resolution forward spectrum was generated assuming stellar and planetary parameters of HD-209458&thinsp;b from @Edwards:2019, reported in \autoref{tab:hd-params}.
 
-| R$_p$ [R$_J$] | M$_p$ [M$_J$] | T$_p$ [K] | P [d] | R$_s$ [R$_\odot$] | Mag K | T$_s$ [K] | M$_s$ [M$_\odot$] |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1.35 | 0.71 | 1613 | 3.52 | 1.18 | 6.31 | 6,086 | 1.18 |
+| R$_\text{P}$ [R$_\text{J}$] | M$_\text{P}$ [M$_\text{J}$] | T$_\text{P}$ [K] | P [d] | R$_s$ [R$_\odot$] | Mag K | T$_\text{s}$ [K] | M$_s$ [M$_\odot$] |
+|:---------------------------:|:---------------------------:|:----------------:|:-----:|:-----------------:|:-----:|:----------------:|:-----------------:|
+| 1.35                        | 0.71                        | 1613             | 3.52  | 1.18              | 6.31  | 6,086            | 1.18              |
 : Summary of the selected target's properties. \label{tab:hd-params}
 
 The stellar spectrum is simulated with the [Phoenix stellar models](https://phoenix.ens-lyon.fr/Grids/BT-Settl/CIFIST2011_2015/FITS/) [@Baraffe:2015], and the planetary atmosphere is gaseous, with hydrogen and helium at a ratio H$_2$/He = 0.172, and has an isothermal temperature profile. We consider five molecular species as atmospheric trace gases: H$_2$O (100 ppm), CH$_4$ (10 ppm), CO (1 ppm), CO$_2$ (0.1 ppm), and NH$_3$ (0.01 ppm). Molecular abundances are assumed constant with altitude. We utilize cross sections at a resolution of 15,000 for all species, as given in \autoref{tab:opacities}. Collision-induced absorption (CIA) with H$_2$–H$_2$ and H$_2$–He and Rayleigh scattering are included in the calculation. We also include fully-opaque gray clouds with a cloud-top pressure of 1000 Pa. Finally, 100 pressure layers are used to sample the atmosphere, from 1 Pa to 10$^6$ Pa, uniformly in log-space.
 
-| Opacity | Reference(s) |
-|:---:|:---:|
+| Opacity     | Reference(s)               |
+|:-----------:|:--------------------------:|
 | H$_2$-H$_2$ | @Abel:2011, @Fletcher:2018 |
-| H$_2$-He | @Abel:2012 |
-| H$_2$O | @Polyansky:2018 |
-| NH$_3$ | @Coles:2019 |
-| CO | @Li:2015 |
-| CO$_2$ | @Rothman:2010 |
-| CH$_4$ | @Yurchenko:2017 |
+| H$_2$-He    | @Abel:2012                 |
+| H$_2$O      | @Polyansky:2018            |
+| NH$_3$      | @Coles:2019                |
+| CO          | @Li:2015                   |
+| CO$_2$      | @Rothman:2010              |
+| CH$_4$      | @Yurchenko:2017            |
 : Cross sections and CIA used in the simulations. \label{tab:opacities}
 
 To simulate the observation of the transmission spectrum, we assume an observation by the `Ariel` space mission [@Tinetti:2018;@Tinetti:2021] in Tier 2 mode [@Edwards:2019]. We utilize radiometric estimates of the total noise on one observation of HD-209458&thinsp;b obtained with `ArielRad` [@Mugnai:2020], the `Ariel` radiometric simulator. `ArielRad` is based on the generic point source radiometric model `ExoRad2` [@Mugnai:2023], adapted with the `Ariel` payload configuration. The software versions used are: `ExoRad2` v2.1.113, `ArielRad-payloads` v0.0.17, and `ArielRad` v2.4.26.
 
 In our retrieval benchmarks, we attempt to constrain the abundances of the trace gases, alongside the temperature profile, the planetary radius, and the cloud-top pressure. \autoref{tab:priors} lists each parameter, its units, and the priors (with corresponding scale) used in the retrievals.
 
-| Parameter         | Unit  |        Prior          |  Scale  |
-|:-----------------:|:-----:|:---------------------:|:-------:|
-| R$_P$             | R$_J$ |       \pm10$\%$       |  linear |
-| T                 |   K   |       100; 4000       |  linear |
-| H$_2$O            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
-| CH$_4$            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
-| CO                |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
-| CO$_2$            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
-| NH$_3$            |  VMR  | 10$^{-12}$; 10$^{-1}$ |   log   |
-| P$_\text{clouds}$ |   Pa  |        1; 10$^{6}$    |   log   |
+| Parameter         | Unit         |        Prior          |  Scale  |
+|:-----------------:|:------------:|:---------------------:|:-------:|
+| R$_\text{P}$      | R$_\text{J}$ |       \pm10$\%$       |  linear |
+| T                 |   K          |       100; 4000       |  linear |
+| H$_2$O            |  VMR         | 10$^{-12}$; 10$^{-1}$ |   log   |
+| CH$_4$            |  VMR         | 10$^{-12}$; 10$^{-1}$ |   log   |
+| CO                |  VMR         | 10$^{-12}$; 10$^{-1}$ |   log   |
+| CO$_2$            |  VMR         | 10$^{-12}$; 10$^{-1}$ |   log   |
+| NH$_3$            |  VMR         | 10$^{-12}$; 10$^{-1}$ |   log   |
+| P$_\text{clouds}$ |   Pa         |        1; 10$^{6}$    |   log   |
 : Parameters and priors used in the retrievals. \label{tab:priors}
 
 We perform five retrievals each with `MultiNest` and `emcee`, with increasing number of molecules included in the free parameters (the other molecules being fixed to their true values), from only H$_2$O to all five trace gases. With `MultiNest`, we set the evidence tolerance to 0.5 and sample the parameter space through 1500 live points. With `emcee`, we utilize 100 walkers and run two independent chains, each to convergence, where we adopt the default convergence criteria of the [autoemcee](https://github.com/JohannesBuchner/autoemcee) package, i.e. the Geweke convergence diagnostic [@Geweke:1991] is z-score < 2.0 and the Gelman-Rubin rank diagnostic [@Gelman:1992] is $\hat{r}$ < 1.01. When iterating the chains, we increase the number of steps by multiplying the number of steps of the previous iteration by a `growth` factor of 2, a parameter that we have enabled as the default value of 10 was deemed too conservative for our tests. As a first comparison, we report in \autoref{tab:times} the computational time of the retrievals with the two samplers.
@@ -110,7 +110,7 @@ The similarity of the results from the two samplers is reassuring, and the retri
 
 | Parameter              | True value | `Emcee`                   | `MultiNest`               |
 |:----------------------:|:----------:|:-------------------------:|:-------------------------:|
-| R$_P$                  | 1.35       |  1.34$^{+0.02}_{-0.02}$   |  1.34$^{+0.02}_{-0.02}$   |
+| R$_\text{P}$           | 1.35       |  1.34$^{+0.02}_{-0.02}$   |  1.34$^{+0.02}_{-0.02}$   |
 | T                      | 1613       |  1635.8$^{+98.9}_{-93.4}$ |  1631.4$^{+97.5}_{-87.0}$ |
 | log(H$_2$O)            | -4         |  -3.31$^{+0.71}_{-0.85}$  |  -3.21$^{+0.87}_{-0.91}$  |
 | log(CH$_4$)            | -5         |  -4.29$^{+0.72}_{-0.87}$  |  -4.20$^{+0.89}_{-0.92}$  |
