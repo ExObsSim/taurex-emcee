@@ -106,7 +106,7 @@ Next, we compare the results of the retrievals. For simplicity, we only discuss 
 
 ![Posterior distributions of the retrieved parameters for the HD-209458&thinsp;b simulated observations with `MultiNest` (blue) and `emcee` (orange). The true values are shown as the black lines. The vertical dashed lines in the histograms on the diagonal show the median and 16$\%$ and 84$\%$ quantiles. \label{fig:posteriors}](posteriors.pdf){height=100%}
 
-| Parameter              | True value | `Emcee`                   | `MultiNest`               |
+| Parameter              | True value | `emcee`                   | `MultiNest`               |
 |:----------------------:|:----------:|:-------------------------:|:-------------------------:|
 | R$_\text{P}$           | 1.35       |  1.34$^{+0.02}_{-0.02}$   |  1.34$^{+0.02}_{-0.02}$   |
 | T                      | 1613       |  1635.8$^{+98.9}_{-93.4}$ |  1631.4$^{+97.5}_{-87.0}$ |
