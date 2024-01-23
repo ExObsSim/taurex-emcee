@@ -125,8 +125,8 @@ html_static_path = ["_static"]
 html_show_sourcelink = False
 
 html_additional_pages = {
-    "index.rst": "index.html",
-    "user/index.rst": "user_index.html",
+    # "index.rst": "index.html",
+    # "user/index.rst": "user_index.html",
 }
 
 html_use_modindex = True
