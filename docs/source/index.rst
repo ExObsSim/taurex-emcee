@@ -50,6 +50,6 @@ Curious about the project history? Head here: :ref:`changelog`
     Developer Guide <developer/index>
     API Guide <api/modules>
     License <license>
-    Changelog <CHANGELOG>
+    Changelog <CHANGELOG>    
     Acknowledgements <ACKNOWLEDGEMENTS>
     Project Page <https://github.com/ExObsSim/taurex-emcee/>
