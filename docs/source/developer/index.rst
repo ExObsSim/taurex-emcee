@@ -12,10 +12,6 @@ Coding conventions
 -----------------------
 The ``taurex-emcee`` code has been developed following the PeP8_ standard and the python Zen_.
 
-.. jupyter-execute::
-
-    import this
-
 
 Documentation
 -----------------------
