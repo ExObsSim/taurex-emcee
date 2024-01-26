@@ -51,7 +51,7 @@ You can verify if the plugin is functioning by seeing if TauREx successfully det
 If there are no errors then the installation was successful!
 
 Uninstall ``taurex-emcee``
--------------------
+---------------------------
 
 ``taurex-emcee`` is installed in your system as a standard python package:
 you can uninstall it from your Environment as
@@ -62,7 +62,7 @@ you can uninstall it from your Environment as
 
 
 Update ``taurex-emcee``
----------------
+---------------------------
 
 If you have installed ``taurex-emcee`` using Pip, now you can update the package simply as
 
@@ -91,7 +91,7 @@ or simply
     pip install .
 
 Modify ``taurex-emcee``
----------------
+---------------------------
 
 You can modify ``taurex-emcee`` main code, editing as you prefer, but in order to make the changes effective
 

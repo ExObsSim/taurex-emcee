@@ -13,4 +13,4 @@ This guide covers the general installation and use of ``taurex-emcee``.
 
     Introduction <introduction>
     Installation <installation>
-    .. Quick start <quickstart>
+    Quick start <quickstart>
