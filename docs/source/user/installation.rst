@@ -44,6 +44,8 @@ To test for correct setup you can do
 
 You can verify if the plugin is functioning by seeing if TauREx successfully detects ``taurex-emcee``.
 
+.. code-block:: console
+
     taurex --plugins
 
 If there are no errors then the installation was successful!
