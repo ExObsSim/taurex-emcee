@@ -221,3 +221,6 @@ latex_documents = [
 # variables from the main Sphinx process.
 package_path = os.path.abspath("../..")
 os.environ["PYTHONPATH"] = ":".join((package_path, os.environ.get("PYTHONPATH", "")))
+
+# This will ensure that no notebooks are executed during the Sphinx build process
+nbsphinx_execute = 'never'
