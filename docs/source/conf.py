@@ -114,7 +114,7 @@ html_theme_options = {
 html_context = {
     "display_github": True,
     "github_user": "ExObsSim",
-    "github_repo": "taurex_emcee",
+    "github_repo": "taurex-emcee",
     "github_version": "main",
     "conf_py_path": "/docs/source/",
 }
