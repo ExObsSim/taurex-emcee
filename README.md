@@ -5,7 +5,7 @@
 
 ## Introduction
 
-`taurex-emcee` is a plugin for [TauREx](https://github.com/ucl-exoplanets/TauREx3_public) 3.1 that provides the [Emcee](https://emcee.readthedocs.io/en/stable/) sampler by Dan Foreman-Mackey & contributors for the retrieval.
+`taurex-emcee` is a plugin for [TauREx 3.1](https://github.com/ucl-exoplanets/TauREx3_public) that provides the [Emcee](https://emcee.readthedocs.io/en/stable/) sampler by Dan Foreman-Mackey & contributors for the retrieval.
 
 ## Table of contents
 
