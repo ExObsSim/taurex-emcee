@@ -51,6 +51,7 @@ docs = [
     "sphinxcontrib-jsmath",
     "nbsphinx~=0.9.3",
     "sphinx_rtd_theme~=1.0.0",
+    "ipython~=8.20.0",
 ]
 
 [project.entry-points."taurex.plugins"]
