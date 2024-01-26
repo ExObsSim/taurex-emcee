@@ -50,10 +50,10 @@ You can verify if the plugin is functioning by seeing if TauREx successfully det
 
 If there are no errors then the installation was successful!
 
-Uninstall ``taurex_emcee``
+Uninstall ``taurex-emcee``
 -------------------
 
-``taurex_emcee`` is installed in your system as a standard python package:
+``taurex-emcee`` is installed in your system as a standard python package:
 you can uninstall it from your Environment as
 
 .. code-block:: console
@@ -61,24 +61,24 @@ you can uninstall it from your Environment as
     pip uninstall taurex_emcee
 
 
-Update ``taurex_emcee``
+Update ``taurex-emcee``
 ---------------
 
-If you have installed ``taurex_emcee`` using Pip, now you can update the package simply as
+If you have installed ``taurex-emcee`` using Pip, now you can update the package simply as
 
 .. code-block:: console
 
     pip install taurex_emcee --upgrade
 
-If you have installed ``taurex_emcee`` from GitHub, you can download or pull a newer version of ``taurex_emcee`` over the old one, replacing all modified data.
+If you have installed ``taurex-emcee`` from GitHub, you can download or pull a newer version of ``taurex-emcee`` over the old one, replacing all modified data.
 
 Then you have to place yourself inside the installation directory with the console
 
 .. code-block:: console
 
-    cd /your_path/taurex_emcee
+    cd /your_path/taurex-emcee
 
-Now you can update ``taurex_emcee`` simply as
+Now you can update ``taurex_-emcee`` simply as
 
 .. code-block:: console
 
@@ -90,10 +90,10 @@ or simply
 
     pip install .
 
-Modify ``taurex_emcee``
+Modify ``taurex-emcee``
 ---------------
 
-You can modify ``taurex_emcee`` main code, editing as you prefer, but in order to make the changes effective
+You can modify ``taurex-emcee`` main code, editing as you prefer, but in order to make the changes effective
 
 .. code-block:: console
 
@@ -105,4 +105,4 @@ or simply
 
     pip install .
 
-To produce new ``taurex_emcee`` functionalities and contribute to the code, please see :ref:`Developer Guide`.
+To produce new ``taurex-emcee`` functionalities and contribute to the code, please see :ref:`Developer Guide`.
