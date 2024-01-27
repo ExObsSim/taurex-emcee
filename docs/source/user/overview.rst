@@ -40,13 +40,13 @@ The ``emcee`` sampler has a number of parameters that can be set. These are desc
     +-------------------------+----------------------------------------------------+--------------------+
     | num_initial_steps       | Number of sampler steps to take in first iteration | 100                |
     +-------------------------+----------------------------------------------------+--------------------+
-    | min_autocorr_times      | Sets autocorelation criterium to converge (if > 0) | 0                  |
+    | min_autocorr_times      | If > 0, sets autocorelation criterion to converge  | 0                  |
     +-------------------------+----------------------------------------------------+--------------------+
     | rhat_max                | Sets Gelman-Rubin diagnostic to converge           | 1.01               |
     +-------------------------+----------------------------------------------------+--------------------+
     | geweke_max              | Sets Geweke diagnostic to converge                 | 2.0                |
     +-------------------------+----------------------------------------------------+--------------------+
-    | progress                | if True, show progress bars                        | True               |
+    | progress                | If True, show progress bars                        | True               |
     +-------------------------+----------------------------------------------------+--------------------+
 
 .. tip::
