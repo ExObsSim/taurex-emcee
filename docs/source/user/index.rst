@@ -13,4 +13,6 @@ This guide covers the general installation and use of ``taurex-emcee``.
 
     Introduction <introduction>
     Installation <installation>
+    Overview <overview>
+    Using with MPI <mpi>
     Quick start <quickstart/index>
