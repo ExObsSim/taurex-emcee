@@ -12,9 +12,9 @@ class EmceeSampler(Optimizer):
 
     Parameters
     ----------
-    observed : :class:`~taurex.data.spectrum.spectrum.BaseSpectrum`, optional
+    observed: :class:`~taurex.data.spectrum.spectrum.BaseSpectrum`, optional
         Sets the observation to optimize the model to
-    model : :class:`~taurex.model.model.ForwardModel`, optional
+    model: :class:`~taurex.model.model.ForwardModel`, optional
         The forward model we wish to optimize
     sigma_fraction: float, optional
         Fraction of weights to use in computing the error. (Default: 0.1)
