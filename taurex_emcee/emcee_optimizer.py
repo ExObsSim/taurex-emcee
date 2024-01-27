@@ -7,6 +7,41 @@ from .autoemcee import ReactiveAffineInvariantSampler
 
 
 class EmceeSampler(Optimizer):
+    """
+    Emcee sampler for TauREx3.1.
+
+    Parameters
+    ----------
+    observed : :class:`~taurex.data.spectrum.spectrum.BaseSpectrum`, optional
+        Sets the observation to optimize the model to
+    model : :class:`~taurex.model.model.ForwardModel`, optional
+        The forward model we wish to optimize
+    sigma_fraction: float, optional
+        Fraction of weights to use in computing the error. (Default: 0.1)
+    num_global_samples: int
+        Number of samples to initially draw from the prior. Default is 10000
+    num_chains: int
+        Number of independent ensembles to run. Default is 4
+    num_walkers: int
+        Ensemble size. Default is max(100, 4 * dim)
+    max_ncalls: int
+        Maximum number of likelihood function evaluations. Default is 1000000
+    growth_factor: int
+        Factor by which to increase the number of steps. Default is 10
+    max_improvement_loops: int
+        Number of times MCMC should be re-attempted. Default is 4
+    num_initial_steps: int
+        Number of sampler steps to take in first iteration. Default is 100
+    min_autocorr_times: int
+        If positive, sets autocorelation as an additional convergence criterion. Default is 0
+    rhat_max: float
+        Sets Gelman-Rubin diagnostic to converge. Default is 1.01
+    geweke_max: float
+        Sets Gelman-Rubin diagnostic to converge. Default is 2.0
+    progress: bool
+        If True, show progress bars. Default is True
+    """
+
     def __init__(
         self,
         observed=None,
@@ -28,7 +63,9 @@ class EmceeSampler(Optimizer):
 
         self.num_global_samples = int(num_global_samples)
         self.num_chains = int(num_chains)
-        self.num_walkers = int(num_walkers) if num_walkers else None  # If None, max(100, 4 * dim) is used
+        self.num_walkers = (
+            int(num_walkers) if num_walkers else None
+        )  # If None, max(100, 4 * dim) is used
         self.max_ncalls = int(max_ncalls)
         self.growth_factor = int(growth_factor)
         self.max_improvement_loops = int(max_improvement_loops)
@@ -61,7 +98,7 @@ class EmceeSampler(Optimizer):
         ndim = len(self.fitting_parameters)
         self.info("Number of dimensions {}".format(ndim))
         self.info("Fitting parameters {}".format(self.fitting_parameters))
-        
+
         if self.num_walkers is None:
             self.num_walkers = max(100, 4 * ndim)
 
