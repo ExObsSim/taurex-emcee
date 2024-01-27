@@ -11,7 +11,7 @@ authors = [
     {name = "Lorenzo V. Mugnai"},
     {name = "Enzo Pascale"},
 ]
-description = "`taurex-emcee` is a plugin for the TauREx 3.1 package that enables automated, parallelized atmospheric retrievals with the `emcee` sampler."
+description = "taurex-emcee is a plugin for the TauREx 3.1 package that enables automated, parallelized atmospheric retrievals with the emcee sampler."
 license = {text = "BSD 3-Clause"}
 classifiers = [
     "Development Status :: 5 - Production/Stable",
