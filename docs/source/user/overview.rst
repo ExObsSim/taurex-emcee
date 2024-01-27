@@ -6,7 +6,7 @@ Overview
 
 The ``taurex-emcee`` plugin enables the use of the ``emcee`` sampler in TauREx3.1 retrievals.
 
-To make use of the plugin, you can simply your existing optimizer with the ``emcee`` sampler.
+To make use of the plugin, you can simply replace your existing optimizer with the ``emcee`` sampler.
 
 For example if we have a multinest optimizer defined as::
 
