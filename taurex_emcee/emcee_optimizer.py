@@ -20,6 +20,8 @@ class EmceeSampler(Optimizer):
         max_improvement_loops=4,
         num_initial_steps=100,
         min_autocorr_times=0,
+        rhat_max=1.01,
+        geweke_max=2.0,
         progress=True,
     ):
         super().__init__("Emcee", observed, model, sigma_fraction)
@@ -32,6 +34,8 @@ class EmceeSampler(Optimizer):
         self.max_improvement_loops = int(max_improvement_loops)
         self.num_initial_steps = int(num_initial_steps)
         self.min_autocorr_times = min_autocorr_times
+        self.rhat_max = float(rhat_max)
+        self.geweke_max = float(geweke_max)
         self.progress = progress
 
     def compute_fit(self):
@@ -78,6 +82,8 @@ class EmceeSampler(Optimizer):
             max_improvement_loops=self.max_improvement_loops,
             num_initial_steps=self.num_initial_steps,
             min_autocorr_times=self.min_autocorr_times,
+            rhat_max=self.rhat_max,
+            geweke_max=self.geweke_max,
             progress=self.progress,
         )
 
