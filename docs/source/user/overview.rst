@@ -47,3 +47,6 @@ The ``emcee`` sampler has a number of parameters that can be set. These are desc
 | progress                | if True, show progress bars                        | True               |
 +-------------------------+----------------------------------------------------+--------------------+
 
+.. tip::
+
+    Find detailed information on convergence criteria at `Introduction to Bayesian Analysis Procedures <https://documentation.sas.com/doc/en/statcdc/14.2/statug/statug_introbayes_sect025.htm>`_.
