@@ -4,6 +4,7 @@
 Welcome to ``taurex-emcee``'s documentation!
 ============================================
 
+    |image1|
 
 This guide will walk you through the ``taurex-emcee`` code.
 
@@ -38,6 +39,10 @@ Want to collaborate? Head here: :ref:`Developer guide`
 Curious about the license? Head here: :ref:`license`
 
 Curious about the project history? Head here: :ref:`changelog`
+
+.. |image1| image::  _static/logo.png
+    :align: middle
+    :height: 180
 
 .. toctree::
     :hidden:

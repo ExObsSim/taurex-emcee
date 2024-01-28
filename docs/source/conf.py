@@ -119,8 +119,8 @@ html_context = {
     "conf_py_path": "/docs/source/",
 }
 
-# html_static_path = ["_static"]
-# html_logo = "_static/logo.svg"
+html_static_path = ["_static"]
+html_logo = "_static/logo.png"
 
 html_show_sourcelink = False
 
@@ -202,7 +202,7 @@ latex_elements = {
     "tableofcontents": " ",
 }
 
-# latex_logo = "_static/logo.png"
+latex_logo = "_static/logo.png"
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
