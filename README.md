@@ -4,7 +4,6 @@
 [![Downloads](https://static.pepy.tech/badge/taurex-emcee)](https://pepy.tech/project/taurex-emcee)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Documentation Status](https://readthedocs.org/projects/taurex-emcee/badge/?version=latest)](https://taurex-emcee.readthedocs.io/en/latest/?badge=latest)
-[![status](https://joss.theoj.org/papers/54464cd302ddd06fc2305634889f1a14/status.svg)](https://joss.theoj.org/papers/54464cd302ddd06fc2305634889f1a14)
 
 ## Introduction
 
